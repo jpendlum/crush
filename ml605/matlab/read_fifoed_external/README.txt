@@ -1,0 +1,1 @@
+This MATLAB script reads and plots data from the debug serial interface.  You copy the data directly from a terminal screen, paste it into a file, and this program will parse it and plot.

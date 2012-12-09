@@ -1,0 +1,1 @@
+This is a MATLAB script for talking to CRUSH over Ethernet.  This script has similar code to the demo but in script form so that you can record data from the ethernet connnection.

@@ -1,0 +1,13 @@
+
+
+
+// Instantiate the module
+clk2x instance_name (
+    .CLKIN_IN(CLKIN_IN), 
+    .RST_IN(RST_IN), 
+    .CLKFX_OUT(CLKFX_OUT), 
+    .CLK0_OUT(CLK0_OUT), 
+    .LOCKED_OUT(LOCKED_OUT)
+    );
+
+
