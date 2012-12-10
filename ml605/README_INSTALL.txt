@@ -105,21 +105,25 @@ Setup Instructions:
    b. The source files are located in \crush\ml605_baseline\ml605\ise\source, \crush\ml605_baseline\ml605\ise\ipcore,
       \crush\ml605_baseline\ml605\edk\SMM_custom, \crush\ml605_baseline\usrp\uhd\fpga\usrp2\top\N2x0\build-N210R3,
       and \crush\ml605_baseline\usrp\uhd\fpga\usrp2\top\N2x0\build-N210R3\ipcore_dir
-   c. Synthesize, Implement, and Generate Programming File in ISE.
-   d. This design has an embedded soft processor (Microblaze), so after building the FPGA .bin file, we need to
+   c. Due to copyright restrictions, the temac_core must be generated from the xco file so the appropriate verilog
+      files for synthesis are created. Open the temac_core xco file in ISE in the "files" tab and regenerate the core.
+      Add the file crush\ml605\ml605\ise\ipcore\temac_core\example_design\temac_core_locallink.v to the design after then
+      generation process completes.
+   d. Synthesize, Implement, and Generate Programming File in ISE.
+   e. This design has an embedded soft processor (Microblaze), so after building the FPGA .bin file, we need to
       make a new SDK project, compile the software, and create a new .bit file loaded with our ELF file.
-   d. Open the EDK project called "smm_i - smm" from within ISE.
-   e. Generate the Hardware XML file for SDK via Project->"Export Hardware Design to SDK..." then select 
+   f. Open the EDK project called "smm_i - smm" from within ISE.
+   g. Generate the Hardware XML file for SDK via Project->"Export Hardware Design to SDK..." then select 
       Export & Launch SDK.
-   f. Generate a new hw_platform via File->New->"Xilinx Hardware Platform Specification". Name the project and use the 
+   h. Generate a new hw_platform via File->New->"Xilinx Hardware Platform Specification". Name the project and use the 
       Target Hardware Specification \crush\ml605_baseline\ml605\edk\SMM_custom\SDK\SDK_Export\hw\smm.xml
-   g. Generate a new board support package via File->New->"Xilinx Board Support Package".
+   i. Generate a new board support package via File->New->"Xilinx Board Support Package".
       Name the project, select the previously created HW Platform in "Target Hardware".
       Use the standalone OS.
-   h. Create a new empty C project called "crush_microblaze" via File->New->"Xilinx C Project".
+   j. Create a new empty C project called "crush_microblaze" via File->New->"Xilinx C Project".
       Select "Target an existing Board Support Package" on the next page. Make sure to use the BSP previously created.
-   i. Only one file is needed, main.c. Make sure it is in the src of the project in SDK. If not, add it.
-   j. IMPORTANT: Update the Source MAC Address at line 223 with the MAC address found on a sticker on your ML605 board.
+   k. Only one file is needed, main.c. Make sure it is in the src of the project in SDK. If not, add it.
+   l. IMPORTANT: Update the Source MAC Address at line 223 with the MAC address found on a sticker on your ML605 board.
                  Update the Destination MAC Address at line 229 with the MAC address of your PC.
                  Example: Source MAC Address 11:22:33:44:55:66
                           Dest. Mac Address 77:88:99:AA:BB:CC
@@ -136,8 +140,8 @@ Setup Instructions:
                                XIo_Out32(0x10000044,0x000400BB);
                                XIo_Out32(0x10000044,0x000500CC);
       You are editing the IP header that the ML605 uses to send UDP packets.
-   k. Compile the project via Project->Build All.
-   l. Make sure you are connected via JTAG to the ML605. You can program it via "Xilinx Tools"->"Program FPGA". 
+   m. Compile the project via Project->Build All.
+   n. Make sure you are connected via JTAG to the ML605. You can program it via "Xilinx Tools"->"Program FPGA". 
       Select the Bitstream: \crush\ml605_baseline\ml605\ise\top.bit
       Select the BMM File: \crush\ml605_baseline\ml605\ise\edkBmmFile_bd.bmm
       Select the ELF file you compiled (the name on your C project) instead of "bootloop".
