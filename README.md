@@ -12,3 +12,6 @@ The FPGA is an integral component of a software defined radio (SDR) that provide
 Publications:
 - George Eichinger, Kaushik Chowdhury, Miriam Leeser. " CRUSH: Cognitive Radio Universal Software Hardware ". 22nd International Conference on Field Programmable Logic and Applications, Oslo, Norway. August, 2012.
 - CRUSH: Cognitive Radio Universal Software Hardware George Eichinger,  MS Thesis, Northeastern University Dept. of ECE, April 2012. (PDF: http://www.coe.neu.edu/Research/rcl//theses/eichinger-msthesis2012.pdf)
+
+Copyright:  
+CRUSH is licensed under GPLv2: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
