@@ -1,0 +1,156 @@
+
+# ##############################################################################
+# Created by Base System Builder Wizard for Xilinx EDK 14.4 Build EDK_P.49d
+# Tue Jan  8 15:40:48 2013
+# Target Board:  Xilinx Virtex 6 ML605 Evaluation Platform Rev D
+# Family:    virtex6
+# Device:    xc6vlx240t
+# Package:   ff1156
+# Speed Grade:  -1
+# Processor number: 1
+# Processor 1: microblaze_0
+# System clock frequency: 100.0
+# Debug Interface: On-Chip HW Debug Module
+# ##############################################################################
+ PARAMETER VERSION = 2.1.0
+
+
+ PORT debug_uart_rx = fpga_0_RS232_Uart_1_RX_pin, DIR = I
+ PORT debug_uart_tx = fpga_0_RS232_Uart_1_TX_pin, DIR = O
+ PORT reset = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1
+ PORT clk_100MHz = clk_in, DIR = I, SIGIS = CLK, CLK_FREQ = 100000000
+ PORT cs = smm_io_if_0_CS, DIR = O
+ PORT addr = smm_io_if_0_ADDR, DIR = O, VEC = [0:15]
+ PORT rnw = smm_io_if_0_RNW, DIR = O
+ PORT dout = smm_io_if_0_DOUT, DIR = O, VEC = [0:31]
+ PORT be = smm_io_if_0_BE, DIR = O, VEC = [0:3]
+ PORT din = net_smm_io_if_0_DIN_pin, DIR = I, VEC = [0:31]
+
+
+BEGIN microblaze
+ PARAMETER INSTANCE = microblaze_0
+ PARAMETER C_USE_BARREL = 1
+ PARAMETER C_DEBUG_ENABLED = 1
+ PARAMETER HW_VER = 8.40.b
+ BUS_INTERFACE DLMB = dlmb
+ BUS_INTERFACE ILMB = ilmb
+ BUS_INTERFACE DPLB = mb_plb
+ BUS_INTERFACE IPLB = mb_plb
+ BUS_INTERFACE DEBUG = microblaze_0_mdm_bus
+ PORT MB_RESET = mb_reset
+END
+
+BEGIN plb_v46
+ PARAMETER INSTANCE = mb_plb
+ PARAMETER HW_VER = 1.05.a
+ PORT PLB_Clk = clk_100_0000MHz
+ PORT SYS_Rst = sys_bus_reset
+END
+
+BEGIN lmb_v10
+ PARAMETER INSTANCE = ilmb
+ PARAMETER HW_VER = 2.00.b
+ PORT LMB_Clk = clk_100_0000MHz
+ PORT SYS_Rst = sys_bus_reset
+END
+
+BEGIN lmb_v10
+ PARAMETER INSTANCE = dlmb
+ PARAMETER HW_VER = 2.00.b
+ PORT LMB_Clk = clk_100_0000MHz
+ PORT SYS_Rst = sys_bus_reset
+END
+
+BEGIN lmb_bram_if_cntlr
+ PARAMETER INSTANCE = dlmb_cntlr
+ PARAMETER HW_VER = 3.10.c
+ PARAMETER C_BASEADDR = 0x00000000
+ PARAMETER C_HIGHADDR = 0x0000ffff
+ BUS_INTERFACE SLMB = dlmb
+ BUS_INTERFACE BRAM_PORT = dlmb_port
+END
+
+BEGIN lmb_bram_if_cntlr
+ PARAMETER INSTANCE = ilmb_cntlr
+ PARAMETER HW_VER = 3.10.c
+ PARAMETER C_BASEADDR = 0x00000000
+ PARAMETER C_HIGHADDR = 0x0000ffff
+ BUS_INTERFACE SLMB = ilmb
+ BUS_INTERFACE BRAM_PORT = ilmb_port
+END
+
+BEGIN bram_block
+ PARAMETER INSTANCE = lmb_bram
+ PARAMETER HW_VER = 1.00.a
+ BUS_INTERFACE PORTA = ilmb_port
+ BUS_INTERFACE PORTB = dlmb_port
+END
+
+BEGIN xps_uartlite
+ PARAMETER INSTANCE = xps_uartlite_0
+ PARAMETER C_BAUDRATE = 115200
+ PARAMETER C_DATA_BITS = 8
+ PARAMETER C_USE_PARITY = 0
+ PARAMETER C_ODD_PARITY = 0
+ PARAMETER HW_VER = 1.02.a
+ PARAMETER C_BASEADDR = 0x84000000
+ PARAMETER C_HIGHADDR = 0x8400ffff
+ BUS_INTERFACE SPLB = mb_plb
+ PORT RX = fpga_0_RS232_Uart_1_RX_pin
+ PORT TX = fpga_0_RS232_Uart_1_TX_pin
+END
+
+BEGIN clock_generator
+ PARAMETER INSTANCE = clock_generator_0
+ PARAMETER C_CLKIN_FREQ = 100000000
+ PARAMETER C_CLKOUT0_FREQ = 100000000
+ PARAMETER C_CLKOUT0_PHASE = 0
+ PARAMETER C_CLKOUT0_GROUP = NONE
+ PARAMETER C_CLKOUT0_BUF = TRUE
+ PARAMETER C_EXT_RESET_HIGH = 1
+ PARAMETER HW_VER = 4.03.a
+ PORT CLKIN = clk_in
+ PORT CLKOUT0 = clk_100_0000MHz
+ PORT RST = sys_rst_s
+ PORT LOCKED = Dcm_all_locked
+END
+
+BEGIN mdm
+ PARAMETER INSTANCE = mdm_0
+ PARAMETER C_MB_DBG_PORTS = 1
+ PARAMETER C_USE_UART = 1
+ PARAMETER HW_VER = 2.10.a
+ PARAMETER C_BASEADDR = 0x84400000
+ PARAMETER C_HIGHADDR = 0x8440ffff
+ BUS_INTERFACE SPLB = mb_plb
+ BUS_INTERFACE MBDEBUG_0 = microblaze_0_mdm_bus
+ PORT Debug_SYS_Rst = Debug_SYS_Rst
+END
+
+BEGIN proc_sys_reset
+ PARAMETER INSTANCE = proc_sys_reset_0
+ PARAMETER C_EXT_RESET_HIGH = 1
+ PARAMETER HW_VER = 3.00.a
+ PORT Slowest_sync_clk = clk_100_0000MHz
+ PORT Ext_Reset_In = sys_rst_s
+ PORT MB_Debug_Sys_Rst = Debug_SYS_Rst
+ PORT Dcm_locked = Dcm_all_locked
+ PORT MB_Reset = mb_reset
+ PORT Bus_Struct_Reset = sys_bus_reset
+ PORT Peripheral_Reset = sys_periph_reset
+END
+
+BEGIN smm_io_if
+ PARAMETER INSTANCE = smm_io_if_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_MEM0_BASEADDR = 0x10000000
+ PARAMETER C_MEM0_HIGHADDR = 0x1000FFFF
+ BUS_INTERFACE SPLB = mb_plb
+ PORT CS = smm_io_if_0_CS
+ PORT ADDR = smm_io_if_0_ADDR
+ PORT RNW = smm_io_if_0_RNW
+ PORT DOUT = smm_io_if_0_DOUT
+ PORT BE = smm_io_if_0_BE
+ PORT DIN = net_smm_io_if_0_DIN_pin
+END
+
