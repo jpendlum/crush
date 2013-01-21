@@ -34,7 +34,7 @@ use unisim.vcomponents.all;
 entity ddr_to_sdr is
   generic (
     BIT_WIDTH         : integer;                                      -- Input data width
-    USE_PHASE_SHIFT   : boolean;                                      -- On reset, init MMCM phase shift with PHASE_SHIFT
+    USE_PHASE_SHIFT   : std_logic;                                    -- '1' = Init MMCM phase on reset
     PHASE_SHIFT       : integer);                                     -- MMCM phase shift tap setting (0 - 55)
   port (
     reset             : in    std_logic;                              -- Active high reset
@@ -169,7 +169,7 @@ begin
   mmcm_phase_shift_proc : process(clk_mmcm_psen,reset)
   begin
     if rising_edge(clk_mmcm_psen) then
-      if (reset = '1')
+      if (reset = '1') then
         phase_cnt_int           <= 0;
         phase_init              <= '0';
         state                   <= IDLE;
@@ -177,7 +177,7 @@ begin
         case state is
           when IDLE =>
             psen                <= '0';
-            if (USE_PHASE_SHIFT = TRUE AND phase_init = '0') then
+            if (USE_PHASE_SHIFT = '1' AND phase_init = '0') then
               if (phase_cnt_int <= PHASE_SHIFT) then
                 psincdec        <= '1';
                 psen            <= '1';
@@ -218,7 +218,7 @@ begin
       end if;
     end if;
   end process;
-  phase_cnt                     <= std_logic_vector(to_unsigned(phase_cnt_int,6))
+  phase_cnt                     <= std_logic_vector(to_unsigned(phase_cnt_int,6));
 
   -- IDDR primative instantiation
   IDDR_gen : for i in 0 to BIT_WIDTH-1 generate
@@ -243,12 +243,8 @@ begin
   -- FIFO will need to be regenerated.
   ddr_data_concatenated         <= ddr_data_rising & ddr_data_falling;
   ddr_data_fifo_gen : for j in 0 to 35 generate
-    if (j < 2*BIT_WIDTH) then
-      ddr_data_fifo(j)          <= ddr_data_concatenated(j);
-    else
-      ddr_data_fifo(j)          <= '0';
-    end if;
-  end generate
+    ddr_data_fifo(j)            <= ddr_data_concatenated(j) when (j < 2*BIT_WIDTH) else '0';
+  end generate;
 
   almost_full_n                 <= NOT(almost_full);
   almost_empty_n                <= NOT(almost_empty);
@@ -279,4 +275,4 @@ begin
     end if;
   end process;
 
-end architecture
+end architecture;

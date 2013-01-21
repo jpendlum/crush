@@ -108,7 +108,6 @@ reg 		[15:0]	ADC_I;
 reg 		[15:0]	ADC_Q;
 reg					testFlag;
 reg 		[16:0]	usrp_data;
-wire 		[13:0]	 adc_dataI,adc_dataQ;
 wire 		[13:0]	 adc_dataI2,adc_dataQ2;
 wire		[15:0] adc_dataI3,adc_dataQ3;
 wire 		[1023:0] vector_out;
@@ -258,7 +257,7 @@ localparam 	init			=	4'd0,
     phase_inc_dly1        <= phase_inc;
     if (phase_inc_dly1 == 1'b0 && phase_inc == 1'b1) begin
       phase_inc_stb       <= 1'b1;
-    else
+    end else begin
       phase_inc_stb       <= 1'b0;
     end
     if (button_s_debounce2 == 1'b1 && button_s_debounce1 == 1'b1) begin
@@ -269,7 +268,7 @@ localparam 	init			=	4'd0,
     phase_dec_dly1        <= phase_dec;
     if (phase_dec_dly1 == 1'b0 && phase_dec == 1'b1) begin
       phase_dec_stb       <= 1'b1;
-    else
+    end else begin
       phase_dec_stb       <= 1'b0;
     end
     // Debounce counter. Resets approx. every 1 ms.
@@ -301,8 +300,8 @@ dcm_200 dcm1
 
   ddr_to_sdr #(
     .BIT_WIDTH(14),
-    .USE_PHASE_SHIFT(FALSE),
-    .PHASE_SHIFT(0)),
+    .USE_PHASE_SHIFT(1'b0),
+    .PHASE_SHIFT(0))
   ddr_to_sdr_int (
     .reset(rst_100MHz),
     .clk_mmcm_psen(clk),
