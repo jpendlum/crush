@@ -124,6 +124,7 @@ architecture RTL of ddr_to_sdr is
   type state_type is (IDLE,WAIT_FOR_DONE);
   signal state                  : state_type;
 
+  signal clk_ddr_int            : std_logic;
   signal ddr_data_clk_bufr      : std_logic;
   signal clk_ddr_locked_int     : std_logic;
   signal psen                   : std_logic;
@@ -135,6 +136,11 @@ architecture RTL of ddr_to_sdr is
   signal ddr_data_falling       : std_logic_vector(BIT_WIDTH-1 downto 0);
   signal ddr_data_concatenated  : std_logic_vector((2*BIT_WIDTH)-1 downto 0);
   signal ddr_data_fifo          : std_logic_vector(35 downto 0);
+  signal sdr_data_fifo          : std_logic_vector(35 downto 0);
+  signal almost_empty           : std_logic;
+  signal almost_empty_n         : std_logic;
+  signal almost_full            : std_logic;
+  signal almost_full_n          : std_logic;
 
 begin
 
@@ -231,7 +237,7 @@ begin
       port map (
         Q1                      => ddr_data_rising(i),
         Q2                      => ddr_data_falling(i),
-        C                       => clk_ddr_mmcm,
+        C                       => clk_ddr_int,
         CE                      => '1',
         D                       => ddr_data(i),
         R                       => clk_ddr_locked_int,
@@ -253,7 +259,7 @@ begin
   fifo_36x16_inst : fifo_36x16
     port map (
       rst                       => clk_ddr_locked_int,
-      wr_clk                    => clk_ddr,
+      wr_clk                    => clk_ddr_int,
       rd_clk                    => clk_sdr,
       din                       => ddr_data_fifo,
       wr_en                     => almost_full_n,
