@@ -107,7 +107,7 @@ reg					testState;
 reg 		[15:0]	ADC_I;
 reg 		[15:0]	ADC_Q;
 reg					testFlag;
-reg 		[15:0]	usrp_data;
+reg 		[16:0]	usrp_data;
 wire 		[13:0]	 adc_dataI,adc_dataQ;
 wire 		[13:0]	 adc_dataI2,adc_dataQ2;
 wire		[15:0] adc_dataI3,adc_dataQ3;
@@ -917,21 +917,18 @@ ethernet ethernet_inst (
 	 .packetValid(packetValid)
     );
 
-
 smm smm_i (
 (*BOX_TYPE="black_box"*)
-		.SIN(USB_RX),
-		.SOUT(USB_TX),
-		.CLK(clk_ext),
-		.RESET(rst_ext),
-		.DIN(ublaze_din_rev),
-		.DOUT(ublaze_dout_rev),
-		.BE(),
-		.RNW(ublaze_rnw),
-		.ADDR(ublaze_addr_rev),
-		.CS(ublaze_cs),
-		.INTERRUPT(1'b0),
-		.INTERRUPT_ACK()
+  .debug_uart_rx(USB_RX),
+  .debug_uart_tx(USB_TX),
+  .clk_100MHz(clk_ext),
+  .reset(rst_ext),
+  .din(ublaze_din_rev),
+  .dout(ublaze_dout_rev),
+  .be(),
+  .rnw(ublaze_rnw),
+  .addr(ublaze_addr_rev),
+  .cs(ublaze_cs)
 );
 
 //================================================================================
@@ -1090,7 +1087,8 @@ always @(posedge clk_ext) begin
 	else begin
 		leds_int        <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd1)) ? ublaze_dout[3:0] : leds_int; //4
 		testFlag        <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd2)) ? ublaze_dout[3:0] : testFlag; //8
-		usrp_data		 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd3)) ? ublaze_dout[15:0] : usrp_data; //C //[1:0] mode + [14:0] remoteFreqCmd
+		usrp_data[16]   <= 1'b0;
+		usrp_data[15:0] <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd3)) ? ublaze_dout[15:0] : usrp_data; //C //[1:0] mode + [14:0] remoteFreqCmd
 		LED_test			 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd4)) ? ublaze_dout[0] : LED_test; //10
 		bus_freqAddr			 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd5)) ? ublaze_dout[15:0] : bus_freqAddr; //14
 		threshold_scale <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd6)) ? ublaze_dout[31:0] : threshold_scale; //18
