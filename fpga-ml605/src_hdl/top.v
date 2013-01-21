@@ -1,86 +1,85 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date:    12:46:06 02/12/2011 
-// Design Name: 
-// Module Name:    simplemicro 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
+// Company:
+// Engineer:
 //
-// Dependencies: 
+// Create Date:    12:46:06 02/12/2011
+// Design Name:
+// Module Name:    simplemicro
+// Project Name:
+// Target Devices:
+// Tool versions:
+// Description:
 //
-// Revision: 
+// Dependencies:
+//
+// Revision:
 // Revision 0.01 - File Created
-// Additional Comments: 
+// Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
 module top(
-    input clk_200_n,
-	 input clk_200_p,
-	 input clk_66,
-    input rst,
-    input USB_RX,
-    output USB_TX,
-	 input [14:0] debug_in,
-	 input			debug_clk_in,
-	 output			debug_clk_out,
-	 input			debug_ack,
-	 output			debug_req,
-	 output [13:0] debug_bus,
-	 
-	 
-	 /*
-	 inout [15:0] Mic1DE,	//Mictor 1, Data Even
-	 inout [15:0] Mic1DO,	//Mictor 1, Data Odd
-	 inout [1:0]  Mic1Clk,	//Mictor 1, Clocks
-	 inout [15:0] Mic2DE,	//Mictor 2, Data Even
-	 inout [15:0] Mic2DO,	//Mictor 2, Data Odd
-	 inout [1:0]  Mic2Clk,	//Mictor 2, Clocks
-	 inout [15:0] Mic3DE,	//Mictor 3, Data Even
-	 inout [15:0] Mic3DO,	//Mictor 3, Data Odd
-	 inout [1:0]  Mic3Clk,	//Mictor 3, Clocks
-	 inout [15:0] Mic4DE,	//Mictor 4, Data Even
-	 inout [15:0] Mic4DO,	//Mictor 4, Data Odd
-	 inout [1:0]  Mic4Clk,	//Mictor 4, Clocks
-	 */
-	 
-	 //ethernet
-	 //RX
-	 output [7:0] GMII_TXD,
-    output GMII_TX_EN,
-    output GMII_TX_ER,
-    output GMII_TX_CLK,
-    
-	 //TX
-	 input [7:0] GMII_RXD,
-    input GMII_RX_DV,
-    input GMII_RX_ER,
-    input GMII_RX_CLK,
-    //Other
-	 input MII_TX_CLK,
-    input GMII_COL,
-    input GMII_CRS,
-	 input PHY_MDIO, //what does this do?
-	 input PHY_MDC, //what does this do?
-	 input PHY_RESET_n, //what does this do?
-	 input PHY_INT, //what does this do?
-	 input GTX_CLK_P,
-	 input GTX_CLK_N,
-	 
-	 
-    input [3:0] Buttons,
-	 input [7:0] DIP,
-	 output reg LED_test,
-    output [3:0] LEDs,
-	 output [7:0] LED2
-    );
+  input clk_200_n,
+  input clk_200_p,
+  input clk_66,
+  input Button_CPU_RESET,
+  input USB_RX,
+  output USB_TX,
+  input [14:0] debug_in,
+  input debug_clk_in,
+  output debug_clk_out,
+  input debug_ack,
+  output debug_req,
+  output [13:0] debug_bus,
+  /*
+  inout [15:0] Mic1DE,	//Mictor 1, Data Even
+  inout [15:0] Mic1DO,	//Mictor 1, Data Odd
+  inout [1:0]  Mic1Clk,	//Mictor 1, Clocks
+  inout [15:0] Mic2DE,	//Mictor 2, Data Even
+  inout [15:0] Mic2DO,	//Mictor 2, Data Odd
+  inout [1:0]  Mic2Clk,	//Mictor 2, Clocks
+  inout [15:0] Mic3DE,	//Mictor 3, Data Even
+  inout [15:0] Mic3DO,	//Mictor 3, Data Odd
+  inout [1:0]  Mic3Clk,	//Mictor 3, Clocks
+  inout [15:0] Mic4DE,	//Mictor 4, Data Even
+  inout [15:0] Mic4DO,	//Mictor 4, Data Odd
+  inout [1:0]  Mic4Clk,	//Mictor 4, Clocks
+  */
+  //ethernet
+  //RX
+  output [7:0] GMII_TXD,
+  output GMII_TX_EN,
+  output GMII_TX_ER,
+  output GMII_TX_CLK,
 
-parameter FIRMWARE_ID  	 = 32'h55535250;  // USRP in ASCII. 
-parameter FIRMWARE_MAJOR = 16'h000A;  		// Firmware major version 
+  //TX
+  input [7:0] GMII_RXD,
+  input GMII_RX_DV,
+  input GMII_RX_ER,
+  input GMII_RX_CLK,
+  //Other
+  input MII_TX_CLK,
+  input GMII_COL,
+  input GMII_CRS,
+  input PHY_MDIO, //what does this do?
+  input PHY_MDC, //what does this do?
+  input PHY_RESET_n, //what does this do?
+  input PHY_INT, //what does this do?
+  input GTX_CLK_P,
+  input GTX_CLK_N,
+
+  input Button_N,
+  input Button_S,
+  input Button_E,
+  input Button_W,
+  input Button_C,
+  input [7:0] DIP,
+  output reg LED_test,
+  output [3:0] LEDs,
+  output [7:0] LED2);
+
+parameter FIRMWARE_ID  	 = 32'h55535250;  // USRP in ASCII.
+parameter FIRMWARE_MAJOR = 16'h000A;  		// Firmware major version
 parameter FIRMWARE_MINOR = 16'h0001;  		// Firmware minor version (major.minor)
 
 //================================================================================
@@ -91,7 +90,7 @@ wire    [15:0] 	ublaze_addr_rev;
 reg     [15:0] 	ublaze_addr;
 reg     [31:0] 	ublaze_din_rev;	// Native format - big endian, bit reversed
 wire    [31:0] 	ublaze_dout_rev;
-reg     [31:0] 	ublaze_din;			
+reg     [31:0] 	ublaze_din;
 reg     [31:0] 	ublaze_dout;
 wire           	ublaze_cs;
 reg		[3:0]		leds_int;
@@ -153,7 +152,7 @@ wire packetValid;
 	 wire [7:0]	gen_spare0;
 	 wire [7:0]	gen_spare1;
 	 wire [7:0]	gen_spare2;
-	 
+
 	 //channel 0 data
 	 wire [31:0] ch0_threshold;
 	 wire [7:0]	ch0_mode;
@@ -161,7 +160,7 @@ wire packetValid;
 	 wire [31:0]	ch0_frequency;
 	 wire [7:0]	ch0_spare0;
 	 wire [7:0]	ch0_spare1;
-	  
+
 	 //channel 1 data
 	 wire [31:0] ch1_threshold;
 	 wire [7:0]	ch1_mode;
@@ -169,7 +168,7 @@ wire packetValid;
 	 wire [31:0]	ch1_frequency;
 	 wire [7:0]	ch1_spare0;
 	 wire [7:0]	ch1_spare1;
-	 
+
 	 //channel 2 data
 	 wire [31:0] ch2_threshold;
 	 wire [7:0]	ch2_mode;
@@ -177,7 +176,7 @@ wire packetValid;
 	 wire [31:0]	ch2_frequency;
 	 wire [7:0]	ch2_spare0;
 	 wire [7:0]	ch2_spare1;
-	 
+
 	 //channel 3 data
 	 wire [31:0] ch3_threshold;
 	 wire [7:0]	ch3_mode;
@@ -185,7 +184,7 @@ wire packetValid;
 	 wire [31:0]	ch3_frequency;
 	 wire [7:0]	ch3_spare0;
 	 wire [7:0]	ch3_spare1;
-	 
+
 	 wire fftInProgress,fftMemFull;
 	 reg ethCtrl;
 	 wire [31:0] theshData;
@@ -197,6 +196,8 @@ wire packetValid;
 
   wire rst_100MHz;
   wire rst_100MHz_n;
+  wire rst_ext;
+  wire rst_ext_n;
 
 localparam 	init			=	4'd0,
 				start			=	4'd1,
@@ -206,27 +207,70 @@ localparam 	init			=	4'd0,
 				waitState	=	4'd5,
 				waitState2	=	4'd6;
 
-//IBUFDS_GTXE1 IBUFGDS_inst(.O(GTX_CLK),.I(GTX_CLK_P),.IB(GTX_CLK_N));				
-				
   reg reset_meta1;
   reg reset_meta2;
   reg reset_debounce1;
   reg reset_debounce2;
   reg reset;
   reg [31:0] reset_debounce_cnt;
-  
+  reg button_n_meta1;
+  reg button_n_meta2;
+  reg button_n_debounce1;
+  reg button_n_debounce2;
+  reg button_s_meta1;
+  reg button_s_meta2;
+  reg button_s_debounce1;
+  reg button_s_debounce2;
+  reg phase_inc;
+  reg phase_inc_dly1;
+  reg phase_inc_stb;
+  reg phase_dec;
+  reg phase_dec_dly1;
+  reg phase_dec_stb;
+
+  // Debouncing
   always@(posedge clk)
   begin
-    reset_meta1         <= rst;
-    reset_meta2         <= reset_meta1;
+    reset_meta1           <= Button_CPU_RESET;
+    reset_meta2           <= reset_meta1;
+    button_n_meta1        <= Button_N;
+    button_n_meta2        <= button_n_meta1;
+    button_s_meta1        <= Button_S;
+    button_s_meta2        <= button_s_meta1;
     if (reset_debounce_cnt == 32'd1000000) begin
-      reset_debounce1   <= reset_meta2;
-      reset_debounce2   <= reset_debounce1;
+      reset_debounce1     <= reset_meta2;
+      reset_debounce2     <= reset_debounce1;
+      button_n_debounce1  <= button_n_meta2;
+      button_n_debounce2  <= button_n_debounce1;
+      button_s_debounce1  <= button_s_meta2;
+      button_s_debounce2  <= button_s_debounce1;
     end
     if (reset_debounce2 == 1'b1 && reset_debounce1 == 1'b1) begin
-      reset         <= 1'b1;
+      reset               <= 1'b1;
     end else if (reset_debounce2 == 1'b0 && reset_debounce1 == 1'b0) begin
-      reset         <= 1'b0;
+      reset               <= 1'b0;
+    end
+    if (button_n_debounce2 == 1'b1 && button_n_debounce1 == 1'b1) begin
+      phase_inc           <= 1'b1;
+    end else if (button_n_debounce2 == 1'b0 && button_n_debounce1 == 1'b0) begin
+      phase_inc           <= 1'b0;
+    end
+    phase_inc_dly1        <= phase_inc;
+    if (phase_inc_dly1 == 1'b0 && phase_inc == 1'b1) begin
+      phase_inc_stb       <= 1'b1;
+    else
+      phase_inc_stb       <= 1'b0;
+    end
+    if (button_s_debounce2 == 1'b1 && button_s_debounce1 == 1'b1) begin
+      phase_dec           <= 1'b1;
+    end else if (button_s_debounce2 == 1'b0 && button_s_debounce1 == 1'b0) begin
+      phase_dec           <= 1'b0;
+    end
+    phase_dec_dly1        <= phase_dec;
+    if (phase_dec_dly1 == 1'b0 && phase_dec == 1'b1) begin
+      phase_dec_stb       <= 1'b1;
+    else
+      phase_dec_stb       <= 1'b0;
     end
     // Debounce counter. Resets approx. every 1 ms.
     if (reset_debounce_cnt > 32'd10000000) begin
@@ -235,46 +279,54 @@ localparam 	init			=	4'd0,
       reset_debounce_cnt  <= reset_debounce_cnt + 1;
     end
   end
-        
+
 dcm_200 dcm1
    (// Clock in ports
     .CLK_IN1_P          (clk_200_p),    // IN
     .CLK_IN1_N          (clk_200_n),    // IN
     // Clock out ports
     .CLK_OUT1           (clk),     // OUT //100M
-	 .CLK_OUT2           (REFCLK),     // OUT //200M
+	 .CLK_OUT2            (REFCLK),     // OUT //200M
 	 .CLK_OUT3            (GTX_CLK),
     // Status and control signals
     .RESET              (rst),        // IN
     .LOCKED             (rst_100MHz_n));      // OUT
-	
-  assign rst_100MHz     = ~rst_100MHz_n;
-   
-	 BUFR BUFR1 (.I(debug_clk_in),.CE(1'b1),.CLR(1'b0),.O(debug_clk_in_buf));
 
-	 dcm_200_ext dcm2
-   (// Clock in ports
-    .CLK_IN1            (debug_clk_in_buf),      // IN
-    // Clock out ports
-    .CLK_OUT1           (clk_ext),     // OUT
-    // Status and control signals
-    .RESET              (rst_100MHz),        // IN
-    .LOCKED             (LOCKED_ext));      // OUT
-	 
-ddr_in ddr_in_0 (
-    .clk(clk), 
-    .rst(rst_100MHz), 
-    .clk_ext(clk_ext), 
-    .data_in(debug_in), 
-    .adc_i_out(adc_i_test), 
-    .adc_q_out(adc_q_test)
-    );
-	 
+  assign rst_100MHz     = ~rst_100MHz_n;
+
+  wire [27:0] adc_data;
+  wire [14:0] adc_dataI;
+  wire [14:0] adc_dataQ;
+  wire        adc_data_vld;
+
+  ddr_to_sdr #(
+    .BIT_WIDTH(14),
+    .USE_PHASE_SHIFT(FALSE),
+    .PHASE_SHIFT(0)),
+  ddr_to_sdr_int (
+    .reset(rst_100MHz),
+    .clk_mmcm_psen(clk),
+    .phase_inc_stb(phase_inc_stb),
+    .phase_dec_stb(phase_dec_stb),
+    .phase_cnt(),
+    .ddr_data_clk(debug_clk_in),
+    .ddr_data(debug_in[13:0]),
+    .clk_ddr(clk_ext),
+    .clk_ddr_locked(rst_ext_n),
+    .clk_sdr(clk_ext),
+    .sdr_data_vld(adc_data),
+    .sdr_data(adc_data_vld));
+
+  assign rst_ext = ~rst_ext_n;
+  // Sign extend to correct length
+  assign adc_dataI = {adc_data[27],adc_data[27:14]};
+  assign adc_dataQ = {adc_data[13],adc_data[13:0]};
+
 	 reg [7:0] bus_mode;
 	 reg [31:0] bus_echo;
 	 reg [15:0] bus_freq;
 	 reg [7:0] bus_testLengthLog;
-	 
+
 	 /*
 	 always@(posedge clk) begin
 		if(rst == 1'b1)  begin
@@ -301,34 +353,34 @@ ddr_in ddr_in_0 (
 
 master_data_bus_WO masterBus (
     //clock signals
-	 .clk(clk), 
-    .rst(rst_100MHz),
+	 .clk(clk_ext),
+    .rst(rst_ext),
 	 //bus signals
 	 .REQ(debug_req),
 	 .ACK(debug_ack),
-    .bus(debug_bus), 
+    .bus(debug_bus),
     .clk_out(debug_clk_out),
 	 //input data
-    .mode(bus_mode), 
-    .echo(bus_echo), 
-    .freq(bus_freq), 
+    .mode(bus_mode),
+    .echo(bus_echo),
+    .freq(bus_freq),
     .testLengthLog(bus_testLengthLog)
-    ); 
+    );
 
 
-	 
-	 
-	 always@(posedge clk) begin
+
+
+	 always@(posedge clk_ext) begin
 		RESET_eth <= 1'b0;
-		if(rst_100MHz == 1'b1) begin
+		if(rst_ext == 1'b1) begin
 			RESET_eth <= 1'b1;
 		end
 	 end
-	 
+
 	 reg packetRequested;
-	 
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			packetRequested <= 1'b0;
 		end
 		else begin
@@ -340,7 +392,7 @@ master_data_bus_WO masterBus (
 			end
 		end
 	 end
-	 
+
 	 (* KEEP = "TRUE" *)reg [9:0] ethState;
 	 reg [31:0] ethData_l;
 	 reg			ethData_we_l;
@@ -380,14 +432,14 @@ master_data_bus_WO masterBus (
 					ethManRawSetup		=	10'd22,
 					ethManRawWrite		=	10'd23,
 					ethManRawFinish	=	10'd24;
-					
-					
+
+
 	reg [31:0] watchEthCounter;
 	reg watchEthFlag;
 	(* KEEP = "TRUE" *)reg watchEthTrigger;
-	
-	always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+
+	always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			watchEthCounter <= 32'd10000000; //0.1 seconds?
 		end
 		else begin
@@ -395,11 +447,11 @@ master_data_bus_WO masterBus (
 			if(watchEthFlag == 1'b1) watchEthCounter <= 32'd50000000;;
 		end
 	end
-	 
+
 	 //state machine to fill data for ethernet
 	 //TODO: add a watchdog timer to make sure it doesn't get stuck
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			ethState <= ethStart;
 			ethData_l <= 32'd0;
 			ethData_we_l <= 1'd0;
@@ -471,7 +523,7 @@ master_data_bus_WO masterBus (
 						endcase
 					end
 				end
-				
+
 				ethManRawStart: begin //start the test
 					ch0_startFlag <= 1'b1; //start the FFT
 					ethState <= ethManRawWait;
@@ -523,8 +575,8 @@ master_data_bus_WO masterBus (
 					if(ch0_fftSize <=8) totalPackets <= 1;
 					if(ch0_fftSize > 8) totalPackets <= (((1<<ch0_fftSize)<<2)>>10); //(2^fftsize*4 = number of bytes)/1024
 				end
-				
-				
+
+
 				ethManStart: begin //start the test
 					ch0_startFlag <= 1'b1; //start the FFT
 					ethState <= ethManWait;
@@ -571,7 +623,7 @@ master_data_bus_WO masterBus (
 					ethData_we_l <= 1'd0;
 					ethState <= ethStart;
 				end
-				
+
 				ethRawStart: begin
 					ch0_startFlag <= 1'b1; //start the FFT
 					ethState <= ethRawWait;
@@ -671,7 +723,7 @@ master_data_bus_WO masterBus (
 			end
 		end
 	end
-	 
+
 	 /*
 	 //doing it this way because this is temporary to see if it works properly
 	 reg [3:0] ethState;
@@ -679,7 +731,7 @@ master_data_bus_WO masterBus (
 	 reg			ethData_we_l;
 	 reg [10:0] ethLength_l;
 	 reg			packetReady_l;
-	 
+
 	 //state machine to fill data for ethernet
 	 always@(posedge clk) begin
 		if(rst == 1'b1) begin
@@ -789,7 +841,7 @@ master_data_bus_WO masterBus (
 		end
 	 end
 	 */
-	 
+
 	 /*
 	 //assign registers to wires
 	 assign ethData = ethData_l;
@@ -798,80 +850,80 @@ master_data_bus_WO masterBus (
 	 assign packetReady = packetReady_l;
 	 */
 ethernet ethernet_inst (
-    .EMACCLIENTRXDVLD(EMACCLIENTRXDVLD), 
-    .EMACCLIENTRXFRAMEDROP(EMACCLIENTRXFRAMEDROP), 
-    .EMACCLIENTRXSTATS(EMACCLIENTRXSTATS), 
-    .EMACCLIENTRXSTATSVLD(EMACCLIENTRXSTATSVLD), 
-    .EMACCLIENTRXSTATSBYTEVLD(EMACCLIENTRXSTATSBYTEVLD), 
-    .CLIENTEMACTXIFGDELAY(CLIENTEMACTXIFGDELAY), 
-    .EMACCLIENTTXSTATS(EMACCLIENTTXSTATS), 
-    .EMACCLIENTTXSTATSVLD(EMACCLIENTTXSTATSVLD), 
-    .EMACCLIENTTXSTATSBYTEVLD(EMACCLIENTTXSTATSBYTEVLD), 
-    .CLIENTEMACPAUSEREQ(CLIENTEMACPAUSEREQ), 
-    .CLIENTEMACPAUSEVAL(CLIENTEMACPAUSEVAL), 
-    .GTX_CLK(GTX_CLK), 
-    .GMII_TXD(GMII_TXD), 
-    .GMII_TX_EN(GMII_TX_EN), 
-    .GMII_TX_ER(GMII_TX_ER), 
-    .GMII_TX_CLK(GMII_TX_CLK), 
-    .GMII_RXD(GMII_RXD), 
-    .GMII_RX_DV(GMII_RX_DV), 
-    .GMII_RX_ER(GMII_RX_ER), 
-    .GMII_RX_CLK(GMII_RX_CLK), 
-    .MII_TX_CLK(MII_TX_CLK), 
-    .GMII_COL(GMII_COL), 
-    .GMII_CRS(GMII_CRS), 
-    .REFCLK(REFCLK), 
+    .EMACCLIENTRXDVLD(EMACCLIENTRXDVLD),
+    .EMACCLIENTRXFRAMEDROP(EMACCLIENTRXFRAMEDROP),
+    .EMACCLIENTRXSTATS(EMACCLIENTRXSTATS),
+    .EMACCLIENTRXSTATSVLD(EMACCLIENTRXSTATSVLD),
+    .EMACCLIENTRXSTATSBYTEVLD(EMACCLIENTRXSTATSBYTEVLD),
+    .CLIENTEMACTXIFGDELAY(CLIENTEMACTXIFGDELAY),
+    .EMACCLIENTTXSTATS(EMACCLIENTTXSTATS),
+    .EMACCLIENTTXSTATSVLD(EMACCLIENTTXSTATSVLD),
+    .EMACCLIENTTXSTATSBYTEVLD(EMACCLIENTTXSTATSBYTEVLD),
+    .CLIENTEMACPAUSEREQ(CLIENTEMACPAUSEREQ),
+    .CLIENTEMACPAUSEVAL(CLIENTEMACPAUSEVAL),
+    .GTX_CLK(GTX_CLK),
+    .GMII_TXD(GMII_TXD),
+    .GMII_TX_EN(GMII_TX_EN),
+    .GMII_TX_ER(GMII_TX_ER),
+    .GMII_TX_CLK(GMII_TX_CLK),
+    .GMII_RXD(GMII_RXD),
+    .GMII_RX_DV(GMII_RX_DV),
+    .GMII_RX_ER(GMII_RX_ER),
+    .GMII_RX_CLK(GMII_RX_CLK),
+    .MII_TX_CLK(MII_TX_CLK),
+    .GMII_COL(GMII_COL),
+    .GMII_CRS(GMII_CRS),
+    .REFCLK(REFCLK),
     .RESET(RESET_eth),
-	 .clk_ext(clk),
-	 .gen_numChannels(gen_numChannels), 
-    .gen_spare0(gen_spare0), 
-    .gen_spare1(gen_spare1), 
-    .gen_spare2(gen_spare2), 
-    .ch0_threshold(ch0_threshold), 
-    .ch0_mode(ch0_mode), 
-    .ch0_fftSize(ch0_fftSize), 
-    .ch0_frequency(ch0_frequency), 
-    .ch0_spare0(ch0_spare0), 
-    .ch0_spare1(ch0_spare1), 
-    .ch1_threshold(ch1_threshold), 
-    .ch1_mode(ch1_mode), 
-    .ch1_fftSize(ch1_fftSize), 
-    .ch1_frequency(ch1_frequency), 
-    .ch1_spare0(ch1_spare0), 
-    .ch1_spare1(ch1_spare1), 
-    .ch2_threshold(ch2_threshold), 
-    .ch2_mode(ch2_mode), 
-    .ch2_fftSize(ch2_fftSize), 
-    .ch2_frequency(ch2_frequency), 
-    .ch2_spare0(ch2_spare0), 
-    .ch2_spare1(ch2_spare1), 
-    .ch3_threshold(ch3_threshold), 
-    .ch3_mode(ch3_mode), 
-    .ch3_fftSize(ch3_fftSize), 
-    .ch3_frequency(ch3_frequency), 
-    .ch3_spare0(ch3_spare0), 
-    .ch3_spare1(ch3_spare1), 
-    .ethData(ethData_l), 
-    .ethData_we(ethData_we_l), 
-    .ethLength(ethLength_l), 
-    .ethHdrData(ethHdrData), 
-    .ethHdrAddr(ethHdrAddr), 
+	 .clk_ext(clk_ext),
+	 .gen_numChannels(gen_numChannels),
+    .gen_spare0(gen_spare0),
+    .gen_spare1(gen_spare1),
+    .gen_spare2(gen_spare2),
+    .ch0_threshold(ch0_threshold),
+    .ch0_mode(ch0_mode),
+    .ch0_fftSize(ch0_fftSize),
+    .ch0_frequency(ch0_frequency),
+    .ch0_spare0(ch0_spare0),
+    .ch0_spare1(ch0_spare1),
+    .ch1_threshold(ch1_threshold),
+    .ch1_mode(ch1_mode),
+    .ch1_fftSize(ch1_fftSize),
+    .ch1_frequency(ch1_frequency),
+    .ch1_spare0(ch1_spare0),
+    .ch1_spare1(ch1_spare1),
+    .ch2_threshold(ch2_threshold),
+    .ch2_mode(ch2_mode),
+    .ch2_fftSize(ch2_fftSize),
+    .ch2_frequency(ch2_frequency),
+    .ch2_spare0(ch2_spare0),
+    .ch2_spare1(ch2_spare1),
+    .ch3_threshold(ch3_threshold),
+    .ch3_mode(ch3_mode),
+    .ch3_fftSize(ch3_fftSize),
+    .ch3_frequency(ch3_frequency),
+    .ch3_spare0(ch3_spare0),
+    .ch3_spare1(ch3_spare1),
+    .ethData(ethData_l),
+    .ethData_we(ethData_we_l),
+    .ethLength(ethLength_l),
+    .ethHdrData(ethHdrData),
+    .ethHdrAddr(ethHdrAddr),
     .ethHdrWE(ethHdrWE),
 	 .rawPacketFlag(rawPacketFlag),
 	 .fftSize(fftSize),
-    .packetBusy(packetBusy), 
+    .packetBusy(packetBusy),
     .packetReady(packetReady_l),
 	 .packetValid(packetValid)
     );
-	 	 
-	 
+
+
 smm smm_i (
 (*BOX_TYPE="black_box"*)
 		.SIN(USB_RX),
 		.SOUT(USB_TX),
-		.CLK(clk),
-		.RESET(rst_100MHz),
+		.CLK(clk_ext),
+		.RESET(rst_ext),
 		.DIN(ublaze_din_rev),
 		.DOUT(ublaze_dout_rev),
 		.BE(),
@@ -905,7 +957,7 @@ always@(*)
 always @(*) begin
 
 	case ({ublaze_addr[6],ublaze_addr[5], ublaze_addr[4], ublaze_addr[3], ublaze_addr[2]} )
-	
+
 		5'd0 : begin //0
 			ublaze_din <= FIRMWARE_ID;
 		end
@@ -959,15 +1011,15 @@ always @(*) begin
 		end
 		default : begin
 			ublaze_din <= 32'hABADBABE;
-		end	
-		
+		end
+
 	endcase
 end
 
 //flag generation
 reg ublaze_rnw_s1;
-always@(posedge clk) begin
-	if(rst_100MHz == 1'b1) begin
+always@(posedge clk_ext) begin
+	if(rst_ext == 1'b1) begin
 		readFlag <= 1'b0;
 		ublaze_rnw_s1 <= 1'b0;
 	end
@@ -979,8 +1031,8 @@ always@(posedge clk) begin
 	end
 end
 
-always@(posedge clk) begin
-	if(rst_100MHz == 1'b1) begin
+always@(posedge clk_ext) begin
+	if(rst_ext == 1'b1) begin
 		ethHdrWE <= 1'b0;
 		packetFlag <= 1'b0;
 	end
@@ -997,8 +1049,8 @@ always@(posedge clk) begin
 end
 
 reg testFlag_s1;
-always@(posedge clk) begin
-	if(rst_100MHz == 1'b1) begin
+always@(posedge clk_ext) begin
+	if(rst_ext == 1'b1) begin
 		bus_startFlag <= 1'b0;
 		testFlag_s1 <= 1'b0;
 	end
@@ -1013,8 +1065,8 @@ end
 //================================================================================
 //	uBlaze write access -- SW controlled registers
 //================================================================================
-always @(posedge clk) begin
-	if(rst_100MHz == 1'b1) begin
+always @(posedge clk_ext) begin
+	if(rst_ext == 1'b1) begin
 		leds_int 			<= 4'b1010;
 		testFlag <= 1'b0;
 		usrp_data <= 18'd0;
@@ -1043,7 +1095,7 @@ always @(posedge clk) begin
 		bus_freqAddr			 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd5)) ? ublaze_dout[15:0] : bus_freqAddr; //14
 		threshold_scale <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd6)) ? ublaze_dout[31:0] : threshold_scale; //18
 		bus_transformWidth	 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd7)) ? ublaze_dout[4:0] : bus_transformWidth; //1C
-		ublaze_threshold		 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd8)) ? ublaze_dout[31:0] : ublaze_threshold; //20 
+		ublaze_threshold		 <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd8)) ? ublaze_dout[31:0] : ublaze_threshold; //20
 		timer6Flag_reg       <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd9)) ? ublaze_dout[0] : timer6Flag_reg; //24
 		timer7Flag_reg       <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd10)) ? ublaze_dout[0] : timer7Flag_reg; //28
 		timer7Start_reg       <= (ublaze_cs & ~ublaze_rnw & (ublaze_addr[15:2] == 4'd11)) ? ublaze_dout[0] : timer7Start_reg; //2C
@@ -1060,8 +1112,8 @@ always @(posedge clk) begin
 end
 
 //fake data generator
-always@(posedge clk) begin
-	if(rst_100MHz == 1'b1) begin
+always@(posedge clk_ext) begin
+	if(rst_ext == 1'b1) begin
 		ADC_I<=16'd0;
 		ADC_Q<=16'd32767;
 	end
@@ -1081,22 +1133,22 @@ end
 
 /*
 adc_int readFifo (
-    .clk(clk), 
-    .rst(rst), 
-    .clk_ext(clk_ext), 
-    .adc_data_in(debug_in), 
+    .clk(clk),
+    .rst(rst),
+    .clk_ext(clk_ext),
+    .adc_data_in(debug_in),
 	 .readFlag(readFlag),
 	 .startFlag(startFlag),
     .adc_dataI(adc_dataI),
 	 .adc_dataQ(adc_dataQ)
     );
-	 
-	 
+
+
 adc_int_stream readFifo2 (
-    .clk(clk), 
-    .rst(rst), 
-    .clk_ext(clk_ext), 
-    .adc_data_in(debug_in), 
+    .clk(clk),
+    .rst(rst),
+    .clk_ext(clk_ext),
+    .adc_data_in(debug_in),
     .adc_dataI(adc_dataI2),
 	 .adc_dataQ(adc_dataQ2)
     );
@@ -1106,24 +1158,24 @@ wire [15:0] i_out,q_out;
 
 /*
 smooth_rf rf_smoother (
-    .clk(clk), 
-    .rst(rst), 
-    .i_in(adc_dataI2), 
-    .q_in(adc_dataQ2), 
-    .i_out(i_out), 
-    .q_out(q_out), 
+    .clk(clk),
+    .rst(rst),
+    .i_in(adc_dataI2),
+    .q_in(adc_dataQ2),
+    .i_out(i_out),
+    .q_out(q_out),
     .dvalid(dvalid)
     );
  */
 adc_int_smooth readFifo3 (
-    .clk(clk), 
-    .rst(rst_100MHz), 
-    .iq_we(1'b1), 
-    .i_in(adc_i_test), 
-    .q_in(adc_q_test), 
-    .readFlag(readFlag), 
-    .startFlag(bus_startFlag), 
-    .adc_dataI(adc_dataI3), 
+    .clk(clk_ext),
+    .rst(rst_ext),
+    .iq_we(1'b1),
+    .i_in(adc_i_test),
+    .q_in(adc_q_test),
+    .readFlag(readFlag),
+    .startFlag(bus_startFlag),
+    .adc_dataI(adc_dataI3),
     .adc_dataQ(adc_dataQ3)
     );
 
@@ -1138,29 +1190,29 @@ assign transformWidth 	= (ethCtrl)?(ch0_fftSize):bus_transformWidth;
 
 
 user_block UB (
-    .clk(clk), 
-    .rst(rst_100MHz),
+    .clk(clk_ext),
+    .rst(rst_ext),
 	 .startFlag(startFlag),
-	 .mode(usrp_data[16:15]), 
-	 .adc_dataI(adc_i_test), 
+	 .mode(usrp_data[16:15]),
+	 .adc_dataI(adc_i_test),
     .adc_dataQ(adc_q_test),
-	 .transform_width_log2(transformWidth), //set transform to 1024 
+	 .transform_width_log2(transformWidth), //set transform to 1024
     .threshold(threshold),  //set threshold to software defined value
 	 .threshold_scale(threshold_scale),  //set threshold_scale to software defined value
     .freqAddr(freqAddr), //requested frequency value
-	 .threshAddr(threshAddr), 
+	 .threshAddr(threshAddr),
 	 .fftScale(fftScale), //scale schedule for the FFT
-	 .initFFT(timer3Flag), 
+	 .initFFT(timer3Flag),
     .fftDone(timer4Flag),
 	 .fftInProgress(fftInProgress),
-	 .fftMemFull(fftMemFull),	 
-    .thresholdingDone(thesholdingDone), 
+	 .fftMemFull(fftMemFull),
+    .thresholdingDone(thesholdingDone),
     .freqData(freqData), //data cooreseponding to the request
 	 .threshData(threshData)
     );
-	 
+
 	 assign timer5Flag=thresholdingDone;
-	 
+
 	 reg  timer0Flag_ext;
 	 reg [13:0] debug_in_s1,debug_in_s2,debug_in_s3,debug_in_s4;
 	 /*
@@ -1178,8 +1230,8 @@ user_block UB (
 	 */
 	 //resolve any metastability / clock crossing issues
 	 reg  timer0Flag_s1,timer0Flag_s2,timer0Flag;
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			timer0Flag_s1 <= 1'b0;
 			timer0Flag_s2 <= 1'b0;
 			timer0Flag <= 1'b0;
@@ -1190,13 +1242,13 @@ user_block UB (
 			timer0Flag <= timer0Flag_s2;
 		end
 	 end
-	 
+
 	 reg  timer1Flag,timer2Flag;
 	 reg [13:0] adc_dataI2_s1,adc_dataI2_s2,adc_dataI2_s3;
 	 //end timer 1 when the data first enters the FPGA clock domain
 	 //end timer 2 when the last part of the data enters the FPGA clock domain
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			timer1Flag <= 1'b0;
 			timer2Flag <= 1'b0;
 			adc_dataI2_s1 <= 14'd0;
@@ -1217,11 +1269,11 @@ user_block UB (
 			end
 		end
 	 end
-	 
+
 	 reg testStart;
 	 reg [1:0] mode_s1;
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			testStart <= 1'b0;
 			mode_s1 <= 2'b0;
 		end
@@ -1233,12 +1285,12 @@ user_block UB (
 			end
 		end
 	 end
-	 
-	 
+
+
 	 //find rising edge of timer 6 flag reg
 	 reg timer6Flag,timer6Flag_s1;;
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			timer6Flag <= 1'b0;
 			timer6Flag_s1 <= 1'b0;
 		end
@@ -1250,11 +1302,11 @@ user_block UB (
 			end
 		end
 	 end
-	 
+
 	 //find rising edge of timer 7 flag reg
 	 reg timer7Flag,timer7Flag_s1;;
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			timer7Flag <= 1'b0;
 			timer7Flag_s1 <= 1'b0;
 		end
@@ -1266,11 +1318,11 @@ user_block UB (
 			end
 		end
 	 end
-	 
+
 	 //find rising edge of timer 7 Start reg
 	 reg timer7Start,timer7Start_s1;;
-	 always@(posedge clk) begin
-		if(rst_100MHz == 1'b1) begin
+	 always@(posedge clk_ext) begin
+		if(rst_ext == 1'b1) begin
 			timer7Start <= 1'b0;
 			timer7Start_s1 <= 1'b0;
 		end
@@ -1283,19 +1335,19 @@ user_block UB (
 		end
 	 end
 
-	 timer timer0(.clk(clk),.rst(rst_100MHz),.timer(timer[0]),.start(testStart),.stop(timer0Flag)); //data enters FPGA fifo from USRP
-	 timer timer1(.clk(clk),.rst(rst_100MHz),.timer(timer[1]),.start(testStart),.stop(timer1Flag)); //data enters FPGA clock domain
-	 timer timer2(.clk(clk),.rst(rst_100MHz),.timer(timer[2]),.start(testStart),.stop(timer2Flag)); //last bit of data enters clock domain
-	 timer timer3(.clk(clk),.rst(rst_100MHz),.timer(timer[3]),.start(testStart),.stop(timer3Flag)); //the start of the FFT
-	 timer timer4(.clk(clk),.rst(rst_100MHz),.timer(timer[4]),.start(testStart),.stop(timer4Flag)); //fft done
-	 timer timer5(.clk(clk),.rst(rst_100MHz),.timer(timer[5]),.start(testStart),.stop(timer5Flag)); //thresholding done (not used yet)
-	 timer timer6(.clk(clk),.rst(rst_100MHz),.timer(timer[6]),.start(testStart),.stop(timer6Flag));
-	 timer timer7(.clk(clk),.rst(rst_100MHz),.timer(timer[7]),.start(timer7Start),.stop(timer7Flag));
-	 
-	 
+	 timer timer0(.clk(clk_ext),.rst(rst_ext),.timer(timer[0]),.start(testStart),.stop(timer0Flag)); //data enters FPGA fifo from USRP
+	 timer timer1(.clk(clk_ext),.rst(rst_ext),.timer(timer[1]),.start(testStart),.stop(timer1Flag)); //data enters FPGA clock domain
+	 timer timer2(.clk(clk_ext),.rst(rst_ext),.timer(timer[2]),.start(testStart),.stop(timer2Flag)); //last bit of data enters clock domain
+	 timer timer3(.clk(clk_ext),.rst(rst_ext),.timer(timer[3]),.start(testStart),.stop(timer3Flag)); //the start of the FFT
+	 timer timer4(.clk(clk_ext),.rst(rst_ext),.timer(timer[4]),.start(testStart),.stop(timer4Flag)); //fft done
+	 timer timer5(.clk(clk_ext),.rst(rst_ext),.timer(timer[5]),.start(testStart),.stop(timer5Flag)); //thresholding done (not used yet)
+	 timer timer6(.clk(clk_ext),.rst(rst_ext),.timer(timer[6]),.start(testStart),.stop(timer6Flag));
+	 timer timer7(.clk(clk_ext),.rst(rst_ext),.timer(timer[7]),.start(timer7Start),.stop(timer7Flag));
+
+
 
 assign LEDs[2:0]	= leds_int[2:0];
-assign LEDs[3]		= LOCKED_ext;
+assign LEDs[3]		= rst_ext_n;
 assign LED2[3:0]	= DIP[3:0];
 assign LED2[7:4]	= leds_int[3:0];
 //assign LED2[7] 	= |errors;
