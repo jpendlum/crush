@@ -1191,8 +1191,8 @@ user_block UB (
     .rst(rst_ext),
 	 .startFlag(startFlag),
 	 .mode(usrp_data[16:15]),
-	 .adc_dataI(adc_i_test),
-    .adc_dataQ(adc_q_test),
+	 .adc_dataI(adc_dataI),
+    .adc_dataQ(adc_dataQ),
 	 .transform_width_log2(transformWidth), //set transform to 1024
     .threshold(threshold),  //set threshold to software defined value
 	 .threshold_scale(threshold_scale),  //set threshold_scale to software defined value
