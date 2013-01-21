@@ -338,10 +338,18 @@ module ethernet
     //------------------------------------------------------------------------
     temac_core_locallink temac_core_locallink_inst
     (
-    // TX clock output
-    .TX_CLK_OUT               (),
-    // TX Clock input from BUFG
-    .TX_CLK                   (tx_clk),
+    // TX client clock output
+    .TX_CLIENT_CLK_OUT         (),
+    // RX client clock output
+    .RX_CLIENT_CLK_OUT         (),
+    // TX PHY clock output
+    .TX_PHY_CLK_OUT            (),
+    // TX client clock input from BUFG
+    .TX_CLIENT_CLK             (tx_clk),
+    // RX client clock input from BUFG
+    .RX_CLIENT_CLK             (rx_clk_i),
+    // TX PHY clock input from BUFG
+    .TX_PHY_CLK                (tx_clk),
 
     // Speed indicator
     .EMACSPEEDIS10100         (speed_vector_i),
@@ -356,13 +364,6 @@ module ethernet
     .RX_LL_DST_RDY_N          (rx_ll_dst_rdy_n_i),
     .RX_LL_FIFO_STATUS        (),
 
-    // Client receiver signals
-    .EMACCLIENTRXDVLD         (EMACCLIENTRXDVLD),
-    .EMACCLIENTRXFRAMEDROP    (EMACCLIENTRXFRAMEDROP),
-    .EMACCLIENTRXSTATS        (EMACCLIENTRXSTATS),
-    .EMACCLIENTRXSTATSVLD     (EMACCLIENTRXSTATSVLD),
-    .EMACCLIENTRXSTATSBYTEVLD (EMACCLIENTRXSTATSBYTEVLD),
-
     // LocalLink transmitter interface
     .TX_LL_CLOCK              (ll_clk_i),
     .TX_LL_RESET              (ll_reset_i),
@@ -371,6 +372,13 @@ module ethernet
     .TX_LL_EOF_N              (tx_ll_eof_n_i),
     .TX_LL_SRC_RDY_N          (tx_ll_src_rdy_n_i),
     .TX_LL_DST_RDY_N          (tx_ll_dst_rdy_n_i),
+
+    // Client receiver signals
+    .EMACCLIENTRXDVLD         (EMACCLIENTRXDVLD),
+    .EMACCLIENTRXFRAMEDROP    (EMACCLIENTRXFRAMEDROP),
+    .EMACCLIENTRXSTATS        (EMACCLIENTRXSTATS),
+    .EMACCLIENTRXSTATSVLD     (EMACCLIENTRXSTATSVLD),
+    .EMACCLIENTRXSTATSBYTEVLD (EMACCLIENTRXSTATSBYTEVLD),
 
     // Client transmitter signals
     .CLIENTEMACTXIFGDELAY     (CLIENTEMACTXIFGDELAY),

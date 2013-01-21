@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.4
-# Date: Wed Oct 19 16:05:45 2011
+# Xilinx Core Generator version 14.4
+# Date: Tue Jan  8 19:43:31 2013
 #
 ##############################################################
 #
@@ -9,6 +9,10 @@
 #  Xilinx CORE Generator IP GUI. It is strongly recommended
 #  that you do not manually alter this file as it may cause
 #  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:xfft:7.1
 #
 ##############################################################
 #
@@ -29,10 +33,10 @@ SET removerpms = false
 SET simulationfiles = Behavioral
 SET speedgrade = -1
 SET verilogsim = true
-SET vhdlsim = true
+SET vhdlsim = false
 # END Project Options
 # BEGIN Select
-SELECT Fast_Fourier_Transform family Xilinx,_Inc. 7.1
+SELECT Fast_Fourier_Transform xilinx.com:ip:xfft:7.1
 # END Select
 # BEGIN Parameters
 CSET butterfly_type=use_xtremedsp_slices
@@ -61,5 +65,8 @@ CSET target_clock_frequency=100
 CSET target_data_throughput=50
 CSET transform_length=32768
 # END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-08-28T14:48:07Z
+# END Extra information
 GENERATE
-# CRC: cf2e934d
+# CRC: ca20fc2c

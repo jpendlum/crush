@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.4
-# Date: Tue Oct 18 02:08:58 2011
+# Xilinx Core Generator version 14.4
+# Date: Tue Jan  8 20:21:16 2013
 #
 ##############################################################
 #
@@ -9,6 +9,10 @@
 #  Xilinx CORE Generator IP GUI. It is strongly recommended
 #  that you do not manually alter this file as it may cause
 #  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:c_addsub:11.0
 #
 ##############################################################
 #
@@ -29,10 +33,10 @@ SET removerpms = false
 SET simulationfiles = Behavioral
 SET speedgrade = -1
 SET verilogsim = true
-SET vhdlsim = true
+SET vhdlsim = false
 # END Project Options
 # BEGIN Select
-SELECT Adder_Subtracter family Xilinx,_Inc. 11.0
+SELECT Adder_Subtracter xilinx.com:ip:c_addsub:11.0
 # END Select
 # BEGIN Parameters
 CSET a_type=Unsigned
@@ -62,5 +66,8 @@ CSET sset=false
 CSET sync_ce_priority=Sync_Overrides_CE
 CSET sync_ctrl_priority=Reset_Overrides_Set
 # END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-11-05T13:04:17Z
+# END Extra information
 GENERATE
-# CRC: 20f4954e
+# CRC: 34209895

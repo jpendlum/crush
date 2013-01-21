@@ -70,7 +70,7 @@ if(~isempty(temp))
     delete(temp);
 end
 
-data.u1=udp('255.255.255.255','RemotePort',9094,'LocalPort',9095,'inputbuffersize',8192);
+data.u1=udp('192.168.10.255','RemotePort',9094,'LocalPort',9095,'inputbuffersize',8192);
 data.u2=udp('192.168.10.100','RemotePort',9091,'LocalPort',9090,'InputBufferSize',65536,'Timeout',0.5); %,'DatagramTerminateMode','off'
 fopen(data.u1);
 fopen(data.u2);

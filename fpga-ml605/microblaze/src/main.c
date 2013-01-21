@@ -7,11 +7,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "xuartns550_l.h"
 #include "xio.h"
 #include "xbasic_types.h"
+#include "xparameters.h"
+#include "xuartlite_l.h"
 
-#define STDOUT_BASEADDR 0x80000000
 #define RECORD_SIZE 4096
 #define NUM_ITER 10
 #define BUFFER_SIZE 80
@@ -41,10 +41,6 @@ int main () {
 	int fft_length;
 	unsigned int timer;
 	int numData;
-
-	/* Init the UART */
-	XUartNs550_SetBaud(STDOUT_BASEADDR, 100000000, 115200); //set baud rate to 115k with clock rate of 66 MHz
-	XUartNs550_SetLineControlReg(STDOUT_BASEADDR, XUN_LCR_8_DATA_BITS);
 
   // xil_printf("Set mode 3, counter\r\n");
  
@@ -78,7 +74,7 @@ int main () {
 	cmdMenu();
 	while(1)
 	{
-		input = XUartNs550_RecvByte(STDOUT_BASEADDR);
+		input = XUartLite_RecvByte(STDOUT_BASEADDRESS);
 
 		// Check if a full cmd has been received
 		//if (isEndOfCmd(input))
@@ -211,10 +207,10 @@ int main () {
 
 int sendWord(unsigned int word)
 {
-	XUartNs550_SendByte(STDOUT_BASEADDR,((word>>24)&0xff));
-	XUartNs550_SendByte(STDOUT_BASEADDR,((word>>16)&0xff));
-	XUartNs550_SendByte(STDOUT_BASEADDR,((word>>8)&0xff));
-	XUartNs550_SendByte(STDOUT_BASEADDR,((word>>0)&0xff));
+	XUartLite_SendByte(STDOUT_BASEADDRESS,((word>>24)&0xff));
+	XUartLite_SendByte(STDOUT_BASEADDRESS,((word>>16)&0xff));
+	XUartLite_SendByte(STDOUT_BASEADDRESS,((word>>8)&0xff));
+	XUartLite_SendByte(STDOUT_BASEADDRESS,((word>>0)&0xff));
 	return 0;
 }
 
@@ -267,55 +263,6 @@ int initEthernetHeader()
 	XIo_Out32(0x10000044,0x002c00F1); //shouldn't read these
 	XIo_Out32(0x10000044,0x002d00F2); //shouldn't read these
 
-
-
-	/*
-	//for testing, just all of the bytes labeled with their byte number
-	XIo_Out32(0x10000044,0x00000001);
-	XIo_Out32(0x10000044,0x00010002);
-	XIo_Out32(0x10000044,0x00020003);
-	XIo_Out32(0x10000044,0x00030004);
-	XIo_Out32(0x10000044,0x00040005);
-	XIo_Out32(0x10000044,0x00050006);
-	XIo_Out32(0x10000044,0x00060007);
-	XIo_Out32(0x10000044,0x00070008);
-	XIo_Out32(0x10000044,0x00080009);
-	XIo_Out32(0x10000044,0x0009000a);
-	XIo_Out32(0x10000044,0x000a000b);
-	XIo_Out32(0x10000044,0x000b000c);
-	XIo_Out32(0x10000044,0x000c000d);
-	XIo_Out32(0x10000044,0x000d000e);
-	XIo_Out32(0x10000044,0x000e000f);
-	XIo_Out32(0x10000044,0x000f0010);
-	XIo_Out32(0x10000044,0x00100011);
-	XIo_Out32(0x10000044,0x00110012);
-	XIo_Out32(0x10000044,0x00120013);
-	XIo_Out32(0x10000044,0x00130014);
-	XIo_Out32(0x10000044,0x00140015);
-	XIo_Out32(0x10000044,0x00150016);
-	XIo_Out32(0x10000044,0x00160017);
-	XIo_Out32(0x10000044,0x00170018);
-	XIo_Out32(0x10000044,0x00180019);
-	XIo_Out32(0x10000044,0x0019001a);
-	XIo_Out32(0x10000044,0x001a001b);
-	XIo_Out32(0x10000044,0x001b001c);
-	XIo_Out32(0x10000044,0x001c001d);
-	XIo_Out32(0x10000044,0x001d001e);
-	XIo_Out32(0x10000044,0x001e001f);
-	XIo_Out32(0x10000044,0x001f0020);
-	XIo_Out32(0x10000044,0x00200021);
-	XIo_Out32(0x10000044,0x00210022);
-	XIo_Out32(0x10000044,0x00220023);
-	XIo_Out32(0x10000044,0x00230024);
-	XIo_Out32(0x10000044,0x00240025);
-	XIo_Out32(0x10000044,0x00250026);
-	XIo_Out32(0x10000044,0x00260027);
-	XIo_Out32(0x10000044,0x00270028);
-	XIo_Out32(0x10000044,0x00280029);
-	XIo_Out32(0x10000044,0x0029002a);
-	XIo_Out32(0x10000044,0x002a002b);
-	XIo_Out32(0x10000044,0x002b002c);
-	*/
 	return 0;
 }
 
@@ -372,7 +319,7 @@ int cmdMenu()
 
 	while(1)
 	{
-		input = XUartNs550_RecvByte(STDOUT_BASEADDR);
+		input = XUartLite_RecvByte(STDOUT_BASEADDRESS);
 		xil_printf("%c",input); //loop back the input so the user can see what they are typing
 		// Check if a full cmd has been received
 		if (isEndOfCmd(input))
@@ -689,138 +636,7 @@ int hexConvert(int inByte) {
 
 }
 
-/*
-// Test a particular idelay setting
-int checkInputDelay() {
-
-	int i;
-	unsigned int lastData;
-	int firstRun=1;
-	int errorCnt = 0;
-	unsigned int regData;
-
-	// Make sure the buffer is initially empty
-	for(i=0; i<RECORD_SIZE; i++) {
-		regData = XIo_In32(0x10000008);
-	}
-
-	firstRun = 1;
-	XIo_Out32(0x10000000, 1);					// Start capture
-
-	for(i=0; i<RECORD_SIZE; i++) {				// Loop over the entire BRAM buffer
-		regData = XIo_In32(0x10000008);
-		if(firstRun == 1) {
-			lastData = regData;
-			firstRun = 0;
-		}
-		else {
-			if(lastData == 0xFF) {
-				if(regData != 0x00){
-					errorCnt++;
-				}
-				lastData = 0x00;
-			}
-			else {
-				if(regData != ++lastData){
-					errorCnt++;
-				}
-			}
-		}
-	}
-	return errorCnt;
-}
-*/
-
 // Is input a carriage return -- if so assume end of command
 int isEndOfCmd(int inByte) {
 	return (inByte == 0x0D);
 }
-
-/*
-// Is the character a valid hex byte
-int validateCmd() {
-	int rw       = 0;
-	int search   = 1;
-	int addr_len = 0;
-	int data_len = 0;
-	int i;
-
-	if( (inputBuffer[0] == 'r') || (inputBuffer[0] == 'R')) {
-		rw  = 1;
-	}
-	else if( (inputBuffer[0] == 'w') || (inputBuffer[0] == 'W') ) {
-		rw = 2;
-	}
-	else {
-		return 0;
-	}
-
-	if((inputBuffer[1] != 0x20)) {
-		return 0;
-	}
-
-	// Get address, skip the space before the address
-	i  = 2;
-	if (isHexChar(inputBuffer[i++]) == 0) {	// Addr must contain at least one hex byte
-		return 0;
-	}
-
-	else {									// Get the entire address
-		addr_len++;
-		while(search) {
-			if(isHexChar(inputBuffer[i])) {
-				addr_len++;
-				if (addr_len > 8) {			// Max address exceeded?
-					return 0;
-				}
-			}
-			else if((inputBuffer[i] == 0x20) || isEndOfCmd(inputBuffer[i])) {	// Expect space for a write, CR for a read
-				search = 0;
-			}
-
-			i++;
-		}
-	}
-
-
-	if(rw == 2) {
-		// Get data, already verified the space...
-		search = 1;
-		i  = 2 + addr_len + 1;
-		if (isHexChar(inputBuffer[i++]) == 0) {	// Data must contain at least one hex byte
-			return 0;
-		}
-		else {									// Get the entire address
-			data_len++;
-			while(search) {
-				if(isHexChar(inputBuffer[i])) {
-					data_len++;
-					if (data_len > 8) {			// Max address exceeded?
-						return 0;
-					}
-				}
-				else if(isEndOfCmd(inputBuffer[i])) {	// Carriage return
-					search = 0;
-				}
-				i++;
-			}
-		}
-	}
-		// Command is valid, convert it.
-		address = 0;
-		data    = 0;
-		for (i=0; i<addr_len; i++) {
-			address = address << 4;
-			address = address | hexConvert(inputBuffer[2+i]);	// Remember, address starts at position 2
-		}
-
-		if(rw == 2) {
-			for (i=0; i<data_len; i++) {
-				data = data << 4;
-				data = data | hexConvert(inputBuffer[2 + addr_len + 1 + i]);
-			}
-		}
-	return(rw);
-
-}
-*/

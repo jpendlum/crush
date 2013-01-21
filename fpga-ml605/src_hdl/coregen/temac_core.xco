@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.4
-# Date: Mon Dec 10 03:17:23 2012
+# Xilinx Core Generator version 14.4
+# Date: Tue Jan  8 17:06:56 2013
 #
 ##############################################################
 #
@@ -12,12 +12,16 @@
 #
 ##############################################################
 #
+#  Generated from component: xilinx.com:ip:v6_emac:1.6
+#
+##############################################################
+#
 # BEGIN Project Options
 SET addpads = false
 SET asysymbol = true
 SET busformat = BusFormatAngleBracketNotRipped
 SET createndf = false
-SET designentry = Verilog
+SET designentry = VHDL
 SET device = xc6vlx240t
 SET devicefamily = virtex6
 SET flowvendor = Foundation_ISE
@@ -28,17 +32,17 @@ SET package = ff1156
 SET removerpms = false
 SET simulationfiles = Behavioral
 SET speedgrade = -1
-SET verilogsim = true
+SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT Virtex-6_Embedded_Tri-Mode_Ethernet_MAC_Wrapper family Xilinx,_Inc. 1.4
+SELECT Virtex-6_Embedded_Tri-Mode_Ethernet_MAC_Wrapper xilinx.com:ip:v6_emac:1.6
 # END Select
 # BEGIN Parameters
 CSET address_filter_enable=false
 CSET byte_phy=false
 CSET client_side_data_width=8_bit
-CSET clock_enable=true
+CSET clock_enable=false
 CSET component_name=temac_core
 CSET dcr_base_address=00
 CSET host_type=None
@@ -81,5 +85,8 @@ CSET unicast_pause_mac_address_4=DD
 CSET unicast_pause_mac_address_5=EE
 CSET unicast_pause_mac_address_6=FF
 # END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-12-18T05:02:19Z
+# END Extra information
 GENERATE
-# CRC: f50d24aa
+# CRC: ab028a63

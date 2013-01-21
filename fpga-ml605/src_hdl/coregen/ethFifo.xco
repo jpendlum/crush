@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 12.4
-# Date: Wed Nov 02 18:15:42 2011
+# Xilinx Core Generator version 14.4
+# Date: Mon Jan  7 17:55:06 2013
 #
 ##############################################################
 #
@@ -9,6 +9,10 @@
 #  Xilinx CORE Generator IP GUI. It is strongly recommended
 #  that you do not manually alter this file as it may cause
 #  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:fifo_generator:9.3
 #
 ##############################################################
 #
@@ -32,7 +36,7 @@ SET verilogsim = true
 SET vhdlsim = true
 # END Project Options
 # BEGIN Select
-SELECT Fifo_Generator family Xilinx,_Inc. 7.2
+SELECT FIFO_Generator xilinx.com:ip:fifo_generator:9.3
 # END Select
 # BEGIN Parameters
 CSET add_ngc_constraint_axi=false
@@ -79,13 +83,8 @@ CSET enable_ecc_rdch=false
 CSET enable_ecc_wach=false
 CSET enable_ecc_wdch=false
 CSET enable_ecc_wrch=false
-CSET enable_handshake_flag_options_axis=false
-CSET enable_handshake_flag_options_rach=false
-CSET enable_handshake_flag_options_rdch=false
-CSET enable_handshake_flag_options_wach=false
-CSET enable_handshake_flag_options_wdch=false
-CSET enable_handshake_flag_options_wrch=false
 CSET enable_read_channel=false
+CSET enable_read_pointer_increment_by2=false
 CSET enable_reset_synchronization=true
 CSET enable_ruser=false
 CSET enable_tdata=false
@@ -152,27 +151,35 @@ CSET overflow_sense=Active_High
 CSET overflow_sense_axi=Active_High
 CSET performance_options=Standard_FIFO
 CSET programmable_empty_type=No_Programmable_Empty_Threshold
-CSET programmable_empty_type_axis=Empty
-CSET programmable_empty_type_rach=Empty
-CSET programmable_empty_type_rdch=Empty
-CSET programmable_empty_type_wach=Empty
-CSET programmable_empty_type_wdch=Empty
-CSET programmable_empty_type_wrch=Empty
+CSET programmable_empty_type_axis=No_Programmable_Empty_Threshold
+CSET programmable_empty_type_rach=No_Programmable_Empty_Threshold
+CSET programmable_empty_type_rdch=No_Programmable_Empty_Threshold
+CSET programmable_empty_type_wach=No_Programmable_Empty_Threshold
+CSET programmable_empty_type_wdch=No_Programmable_Empty_Threshold
+CSET programmable_empty_type_wrch=No_Programmable_Empty_Threshold
 CSET programmable_full_type=No_Programmable_Full_Threshold
-CSET programmable_full_type_axis=Full
-CSET programmable_full_type_rach=Full
-CSET programmable_full_type_rdch=Full
-CSET programmable_full_type_wach=Full
-CSET programmable_full_type_wdch=Full
-CSET programmable_full_type_wrch=Full
+CSET programmable_full_type_axis=No_Programmable_Full_Threshold
+CSET programmable_full_type_rach=No_Programmable_Full_Threshold
+CSET programmable_full_type_rdch=No_Programmable_Full_Threshold
+CSET programmable_full_type_wach=No_Programmable_Full_Threshold
+CSET programmable_full_type_wdch=No_Programmable_Full_Threshold
+CSET programmable_full_type_wrch=No_Programmable_Full_Threshold
 CSET rach_type=FIFO
 CSET rdch_type=FIFO
 CSET read_clock_frequency=1
 CSET read_data_count=false
 CSET read_data_count_width=12
+CSET register_slice_mode_axis=Fully_Registered
+CSET register_slice_mode_rach=Fully_Registered
+CSET register_slice_mode_rdch=Fully_Registered
+CSET register_slice_mode_wach=Fully_Registered
+CSET register_slice_mode_wdch=Fully_Registered
+CSET register_slice_mode_wrch=Fully_Registered
 CSET reset_pin=true
 CSET reset_type=Asynchronous_Reset
 CSET ruser_width=1
+CSET synchronization_stages=2
+CSET synchronization_stages_axi=2
 CSET tdata_width=64
 CSET tdest_width=4
 CSET tid_width=8
@@ -199,5 +206,8 @@ CSET write_data_count=false
 CSET write_data_count_width=10
 CSET wuser_width=1
 # END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-11-19T12:39:56Z
+# END Extra information
 GENERATE
-# CRC:  f223d8f
+# CRC: 874cc651

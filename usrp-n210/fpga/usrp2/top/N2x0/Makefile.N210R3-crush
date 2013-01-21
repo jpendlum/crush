@@ -88,6 +88,7 @@ TRANSLATE_PROPERTIES = \
 #       some settings have been changed:
 #       "Allow Logic Optimi..." from TRUE to FALSE
 #       "Optimization Strat..." from Speed to Area
+#       "Combinatorial Logi..." from TRUE to FALSE
 MAP_PROPERTIES = \
 "Generate Detailed MAP Report" TRUE \
 "Allow Logic Optimization Across Hierarchy" FALSE \
@@ -98,7 +99,7 @@ MAP_PROPERTIES = \
 "Map Effort Level" High \
 "Extra Effort" Normal \
 "Combinatorial Logic Optimization" FALSE \
-"Register Duplication" FALSE
+"Register Duplication" TRUE
 
 PLACE_ROUTE_PROPERTIES = \
 "Place & Route Effort Level (Overall)" High 

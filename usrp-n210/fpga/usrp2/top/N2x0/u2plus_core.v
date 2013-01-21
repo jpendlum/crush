@@ -840,6 +840,50 @@ module u2plus_core
       end
    end
 
+   reg [14:0] TestPatternI, TestPatternQ;
+   reg [3:0] TestPattern;
+   always@(posedge dsp_clk) begin
+      if(dsp_rst == 1'b1) begin
+         TestPatternI   <= 15'h0000;
+         TestPatternQ   <= 15'hFFFF;
+         TestPattern    <= 3'd0;
+      end
+      else begin
+         if (TestPattern < 3'd5) begin
+            TestPattern    <= TestPattern + 1'b1;
+         end
+         else begin
+            TestPattern    <= 3'd0;
+         end
+         case(TestPattern)
+            3'd0: begin
+               TestPatternI   <= 15'h0000;
+               TestPatternQ   <= 15'hFFFF;
+            end
+            3'd1: begin
+               TestPatternI   <= 15'h0001;
+               TestPatternQ   <= 15'hFFFE;
+            end
+            3'd2: begin
+               TestPatternI   <= 15'h0002;
+               TestPatternQ   <= 15'hFFFD;
+            end
+            3'd3: begin
+               TestPatternI   <= 15'h0003;
+               TestPatternQ   <= 15'hFFFC;
+            end
+            3'd4: begin
+               TestPatternI   <= 15'hAAAA;
+               TestPatternQ   <= 15'h5555;
+            end
+            default: begin
+               TestPatternI   <= 15'h0000;
+               TestPatternQ   <= 15'h0000;
+            end
+         endcase
+      end
+   end
+
    always@(posedge dsp_clk) begin
       if(dsp_rst == 1'b1) begin
          adc_dataI <= 15'hAAAA;
@@ -857,9 +901,9 @@ module u2plus_core
                adc_dataI <= {sine_out[13],sine_out};
                adc_dataQ <= {sine_out[13],cosine_out};
             end
-            8'd2: begin             //mode 2 is for an algorithm test, we send a test pattern for 1024 clocks, then go back to normal
-               adc_dataI <= 15'h1234;
-               adc_dataQ <= 15'h5678;
+            8'd2: begin             //mode 2 Test Pattern
+               adc_dataI <= TestPatternI;
+               adc_dataQ <= TestPatternQ;
             end
             8'd3: begin             //mode 3 is an up counter
                adc_dataI <= debugCounterI;
