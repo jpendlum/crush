@@ -33,13 +33,13 @@ use unisim.vcomponents.all;
 
 entity ddr_to_sdr is
   generic (
-    BIT_WIDTH         : integer;                                      -- Input data width
-    USE_PHASE_SHIFT   : std_logic;                                    -- '1' = Init MMCM phase on reset
-    PHASE_SHIFT       : integer);                                     -- MMCM phase shift tap setting (0 - 55)
+    BIT_WIDTH         : integer := 14;                              -- Input data width
+    USE_PHASE_SHIFT   : string  := "FALSE";                         -- "TRUE/FALSE", Init MMCM phase on reset
+    PHASE_SHIFT       : integer := 0);                              -- MMCM phase shift tap setting (0 - 55)
   port (
     reset             : in    std_logic;                              -- Active high reset
     -- Calibrate MMCM Phase
-    clk_mmcm_psen     : in    std_logic;                              -- MMCM phase shift clock
+    clk_mmcm_ps       : in    std_logic;                              -- MMCM phase shift clock
     phase_inc_stb     : in    std_logic;                              -- Increment MMCM phase
     phase_dec_stb     : in    std_logic;                              -- Decrement MMCM phase
     phase_cnt         : out   std_logic_vector(5 downto 0);           -- Current phase shift, 0 - 55.
@@ -127,6 +127,9 @@ architecture RTL of ddr_to_sdr is
   signal clk_ddr_int            : std_logic;
   signal ddr_data_clk_bufr      : std_logic;
   signal clk_ddr_locked_int     : std_logic;
+  signal clk_ddr_locked_meta1   : std_logic;
+  signal clk_ddr_locked_meta2   : std_logic;
+  signal clk_ddr_locked_n       : std_logic;
   signal psen                   : std_logic;
   signal psincdec               : std_logic;
   signal psdone                 : std_logic;
@@ -141,6 +144,9 @@ architecture RTL of ddr_to_sdr is
   signal almost_empty_n         : std_logic;
   signal almost_full            : std_logic;
   signal almost_full_n          : std_logic;
+
+  attribute keep                  : string;
+  attribute keep of phase_cnt_int : signal is "true";
 
 begin
 
@@ -161,32 +167,40 @@ begin
   mmcm_ddr_to_sdr_inst : mmcm_ddr_to_sdr
     port map (
       CLKIN_100MHz              => ddr_data_clk_bufr,
-      CLKOUT_100MHz             => clk_ddr,
-      PSCLK                     => clk_mmcm_psen,
+      CLKOUT_100MHz             => clk_ddr_int,
+      PSCLK                     => clk_mmcm_ps,
       PSEN                      => psen,
       PSINCDEC                  => psincdec,
       PSDONE                    => psdone,
       RESET                     => reset,
       LOCKED                    => clk_ddr_locked_int);
 
+  clk_ddr                       <= clk_ddr_int;
   clk_ddr_locked                <= clk_ddr_locked_int;
+  clk_ddr_locked_n              <= NOT(clk_ddr_locked_int);
 
   -- MMCM dynamic phase shift state machine
-  mmcm_phase_shift_proc : process(clk_mmcm_psen,reset)
+  mmcm_phase_shift_proc : process(clk_mmcm_ps,reset)
   begin
-    if rising_edge(clk_mmcm_psen) then
+    if rising_edge(clk_mmcm_ps) then
       if (reset = '1') then
+        clk_ddr_locked_meta1    <= '0';
+        clk_ddr_locked_meta2    <= '0';
         phase_cnt_int           <= 0;
         phase_init              <= '0';
         state                   <= IDLE;
       else
+        -- Synchronizer for MMCM locked signal
+        clk_ddr_locked_meta1    <= clk_ddr_locked_int;
+        clk_ddr_locked_meta2    <= clk_ddr_locked_meta1;
         case state is
           when IDLE =>
             psen                <= '0';
-            if (USE_PHASE_SHIFT = '1' AND phase_init = '0') then
+            if (USE_PHASE_SHIFT = "TRUE" AND phase_init = '0' AND clk_ddr_locked_meta2 = '1') then
               if (phase_cnt_int <= PHASE_SHIFT) then
                 psincdec        <= '1';
                 psen            <= '1';
+                phase_cnt_int   <= phase_cnt_int + 1;
                 state           <= WAIT_FOR_DONE;
               else
                 phase_init      <= '1';
@@ -240,7 +254,7 @@ begin
         C                       => clk_ddr_int,
         CE                      => '1',
         D                       => ddr_data(i),
-        R                       => clk_ddr_locked_int,
+        R                       => clk_ddr_locked_n,
         S                       => '0');
   end generate;
 
@@ -258,12 +272,12 @@ begin
   -- Clock crossing and buffering FIFO. 
   fifo_36x16_inst : fifo_36x16
     port map (
-      rst                       => clk_ddr_locked_int,
+      rst                       => clk_ddr_locked_n,
       wr_clk                    => clk_ddr_int,
       rd_clk                    => clk_sdr,
       din                       => ddr_data_fifo,
       wr_en                     => almost_full_n,
-      rd_en                     => almost_empty,
+      rd_en                     => almost_empty_n,
       dout                      => sdr_data_fifo,
       full                      => open,
       almost_full               => almost_full,

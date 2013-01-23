@@ -300,11 +300,11 @@ dcm_200 dcm1
 
   ddr_to_sdr #(
     .BIT_WIDTH(14),
-    .USE_PHASE_SHIFT(1'b0),
-    .PHASE_SHIFT(0))
+    .USE_PHASE_SHIFT("TRUE"),
+    .PHASE_SHIFT(14))
   ddr_to_sdr_int (
     .reset(rst_100MHz),
-    .clk_mmcm_psen(clk),
+    .clk_mmcm_ps(clk),
     .phase_inc_stb(phase_inc_stb),
     .phase_dec_stb(phase_dec_stb),
     .phase_cnt(),
@@ -313,8 +313,8 @@ dcm_200 dcm1
     .clk_ddr(clk_ext),
     .clk_ddr_locked(rst_ext_n),
     .clk_sdr(clk_ext),
-    .sdr_data_vld(adc_data),
-    .sdr_data(adc_data_vld));
+    .sdr_data_vld(adc_data_vld),
+    .sdr_data(adc_data));
 
   assign rst_ext = ~rst_ext_n;
   // Sign extend to correct length
