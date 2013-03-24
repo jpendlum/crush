@@ -1,0 +1,30 @@
+#Please do not modify this file by hand
+XmpVersion: 14.4
+VerMgmt: 14.4
+IntStyle: ise
+Flow: ise
+ModuleSearchPath: /home/jpendlum/crush/fpga-ml605/src/hdl/edk_pcores
+MHS File: microblaze.mhs
+Architecture: virtex6
+Device: xc6vlx240t
+Package: ff1156
+SpeedGrade: -1
+UserCmd1: 
+UserCmd1Type: 0
+UserCmd2: 
+UserCmd2Type: 0
+GenSimTB: 0
+SdkExportBmmBit: 0
+SdkExportDir: SDK/SDK_Export
+InsertNoPads: 1
+WarnForEAArch: 1
+HdlLang: vhdl
+SimModel: BEHAVIORAL
+ExternalMemSim: 0
+UcfFile: data/microblaze.ucf
+EnableParTimingError: 1
+ShowLicenseDialog: 1
+BInfo: 
+Processor: microblaze_0
+ElfImp: 
+ElfSim: 

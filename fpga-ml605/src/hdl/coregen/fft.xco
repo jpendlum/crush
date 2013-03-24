@@ -1,0 +1,72 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.4
+# Date: Fri Mar 22 21:55:41 2013
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:xfft:7.1
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = true
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc6vlx240t
+SET devicefamily = virtex6
+SET flowvendor = Foundation_ISE
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = ff1156
+SET removerpms = false
+SET simulationfiles = Behavioral
+SET speedgrade = -1
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT Fast_Fourier_Transform xilinx.com:ip:xfft:7.1
+# END Select
+# BEGIN Parameters
+CSET butterfly_type=use_luts
+CSET ce=true
+CSET channels=1
+CSET complex_mult_type=use_mults_performance
+CSET component_name=fft
+CSET cyclic_prefix_insertion=false
+CSET data_format=fixed_point
+CSET implementation_options=radix_4_burst_io
+CSET input_data_offset=no_offset
+CSET input_width=14
+CSET memory_options_data=block_ram
+CSET memory_options_hybrid=false
+CSET memory_options_phase_factors=block_ram
+CSET memory_options_reorder=block_ram
+CSET number_of_stages_using_block_ram_for_data_and_phase_factors=0
+CSET output_ordering=natural_order
+CSET ovflo=false
+CSET phase_factor_width=15
+CSET rounding_modes=convergent_rounding
+CSET run_time_configurable_transform_length=true
+CSET scaling_options=unscaled
+CSET sclr=true
+CSET target_clock_frequency=100
+CSET target_data_throughput=50
+CSET transform_length=8192
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-08-28T14:48:07Z
+# END Extra information
+GENERATE
+# CRC: a57e31a8

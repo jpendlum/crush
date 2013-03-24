@@ -55,14 +55,16 @@ module u2plus
    input FPGA_RESET,
    output [3:1] TXD, input [3:1] RXD, // UARTs
    //input [3:0] dipsw,  // Forgot DIP Switches...
-   //output [1:0] debug_clk,
-   //output [31:0] debug,
-   output [14:0] debug_out,
-   output        debug_clk_out,
-   input  [13:0] debug_bus,
-   output        debug_ack,
-   input         debug_req,
-   input         debug_clk_in,
+
+   // CRUSH (on debug pins)
+   output        RX_DATA_CLK_N,
+   output        RX_DATA_CLK_P,
+   output [13:0] RX_DATA_N,
+   output [13:0] RX_DATA_P,
+   input         SPARE0,
+   input         SPARE1,
+   input         SPARE2,
+   input         UART_RX,
 
    // Clock Gen Control
    output [1:0] clk_en,
@@ -155,7 +157,7 @@ module u2plus
    BUFG phyclk2 (.O(CLK_TO_MAC_int2), .I(CLK_TO_MAC_int));
 
    // FPGA-specific pins connections
-   wire 	clk_fpga, dsp_clk, clk_div, dcm_out, wb_clk, clock_ready;
+   wire 	clk_fpga, dsp_clk, dsp_clk_180, clk_div, dcm_out, dcm_out_180, wb_clk, clock_ready;
 
    IBUFGDS clk_fpga_pin (.O(clk_fpga),.I(CLK_FPGA_P),.IB(CLK_FPGA_N));
    defparam 	clk_fpga_pin.IOSTANDARD = "LVPECL_25";
@@ -221,7 +223,7 @@ module u2plus
                  .CLK2X(),
                  .CLK2X180(),
                  .CLK90(),
-                 .CLK180(),
+                 .CLK180(dcm_out_180),
                  .CLK270(clk270_100),
                  .LOCKED(LOCKED_OUT),
                  .PSDONE(),
@@ -241,6 +243,7 @@ module u2plus
    defparam DCM_INST.PHASE_SHIFT = 0;
    defparam DCM_INST.STARTUP_WAIT = "FALSE";
 
+   BUFG dspclk_180_BUFG (.I(dcm_out_180), .O(dsp_clk_180));
    BUFG dspclk_BUFG (.I(dcm_out), .O(dsp_clk));
    BUFG wbclk_BUFG (.I(clk_div), .O(wb_clk));
 
@@ -384,14 +387,12 @@ module u2plus
 		     .clk_to_mac	(CLK_TO_MAC_int2),
 		     .pps_in		(pps),
 		     .leds		(leds_int),
-         //.debug   (debug[31:0]),
-         //.debug_clk   (debug_clk[1:0]),
-         .debug_out     (debug_out[14:0]),
-         .debug_clk_out (debug_clk_out),
-         .debug_bus     (debug_bus[13:0]),
-         .debug_ack     (debug_ack),
-         .debug_req     (debug_req),
-         .debug_clk_in  (debug_clk_in),
+         .dsp_clk_180(dsp_clk_180),
+         .RX_DATA_CLK_N(RX_DATA_CLK_N),
+         .RX_DATA_CLK_P(RX_DATA_CLK_P),
+         .RX_DATA_N(RX_DATA_N[13:0]),
+         .RX_DATA_P(RX_DATA_P[13:0]),
+         .UART_RX(UART_RX),
 		     .exp_time_in	(exp_time_in),
 		     .exp_time_out	(exp_time_out),
 		     .GMII_COL		(GMII_COL),
