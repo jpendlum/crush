@@ -1,0 +1,214 @@
+
+# ##############################################################################
+# Created by Base System Builder Wizard for Xilinx EDK 14.4 Build EDK_P.49d
+# Sat Feb 16 17:50:10 2013
+# Target Board:  xilinx.com ml605 Rev D
+# Family:    virtex6
+# Device:    xc6vlx240t
+# Package:   ff1156
+# Speed Grade:  -1
+# ##############################################################################
+ PARAMETER VERSION = 2.1.0
+
+
+ PORT uart_debug_tx = RS232_Uart_1_sout, DIR = O
+ PORT uart_debug_rx = RS232_Uart_1_sin, DIR = I
+ PORT reset = RESET, DIR = I, SIGIS = RST, RST_POLARITY = 1
+ PORT uart_usrp_rx = axi_uartlite_usrp_RX, DIR = I
+ PORT uart_usrp_tx = axi_uartlite_usrp_TX, DIR = O
+ PORT clk = net_clock_generator_0_CLKIN, DIR = I, SIGIS = CLK, CLK_FREQ = 100000000
+ PORT gpio_1_out = axi_gpio_0_GPIO_IO_O, DIR = O, VEC = [31:0]
+ PORT gpio_1_in = net_gpio_1_in, DIR = I, VEC = [31:0]
+ PORT fsl_rst = FSL_Ext_Rst, DIR = O
+ PORT fsl_s_read = net_fsl_s_read, DIR = I
+ PORT fsl_s_data = FSL_Ext_S_Data, DIR = O, VEC = [0:31]
+ PORT fsl_s_control = FSL_Ext_S_Control, DIR = O
+ PORT fsl_s_exists = FSL_Ext_S_Exists, DIR = O
+ PORT fsl_m_write = net_fsl_m_write, DIR = I
+ PORT fsl_m_data = net_fsl_m_data, DIR = I, VEC = [0:31]
+ PORT fsl_m_control = net_fsl_m_control, DIR = I
+ PORT fsl_m_full = FSL_Ext_M_Full, DIR = O
+ PORT fsl_m_clk = net_fsl_m_clk, DIR = I
+ PORT fsl_s_clk = net_fsl_s_clk, DIR = I
+
+
+BEGIN proc_sys_reset
+ PARAMETER INSTANCE = proc_sys_reset_0
+ PARAMETER HW_VER = 3.00.a
+ PARAMETER C_EXT_RESET_HIGH = 1
+ PORT MB_Debug_Sys_Rst = proc_sys_reset_0_MB_Debug_Sys_Rst
+ PORT Dcm_locked = proc_sys_reset_0_Dcm_locked
+ PORT MB_Reset = proc_sys_reset_0_MB_Reset
+ PORT Slowest_sync_clk = clk_100_0000MHz
+ PORT Interconnect_aresetn = proc_sys_reset_0_Interconnect_aresetn
+ PORT Ext_Reset_In = RESET
+ PORT BUS_STRUCT_RESET = proc_sys_reset_0_BUS_STRUCT_RESET
+END
+
+BEGIN lmb_v10
+ PARAMETER INSTANCE = microblaze_0_ilmb
+ PARAMETER HW_VER = 2.00.b
+ PORT SYS_RST = proc_sys_reset_0_BUS_STRUCT_RESET
+ PORT LMB_CLK = clk_100_0000MHz
+END
+
+BEGIN lmb_bram_if_cntlr
+ PARAMETER INSTANCE = microblaze_0_i_bram_ctrl
+ PARAMETER HW_VER = 3.10.c
+ PARAMETER C_BASEADDR = 0x00000000
+ PARAMETER C_HIGHADDR = 0x00007fff
+ BUS_INTERFACE SLMB = microblaze_0_ilmb
+ BUS_INTERFACE BRAM_PORT = microblaze_0_i_bram_ctrl_2_microblaze_0_bram_block
+END
+
+BEGIN lmb_v10
+ PARAMETER INSTANCE = microblaze_0_dlmb
+ PARAMETER HW_VER = 2.00.b
+ PORT SYS_RST = proc_sys_reset_0_BUS_STRUCT_RESET
+ PORT LMB_CLK = clk_100_0000MHz
+END
+
+BEGIN lmb_bram_if_cntlr
+ PARAMETER INSTANCE = microblaze_0_d_bram_ctrl
+ PARAMETER HW_VER = 3.10.c
+ PARAMETER C_BASEADDR = 0x00000000
+ PARAMETER C_HIGHADDR = 0x00007fff
+ BUS_INTERFACE SLMB = microblaze_0_dlmb
+ BUS_INTERFACE BRAM_PORT = microblaze_0_d_bram_ctrl_2_microblaze_0_bram_block
+END
+
+BEGIN bram_block
+ PARAMETER INSTANCE = microblaze_0_bram_block
+ PARAMETER HW_VER = 1.00.a
+ BUS_INTERFACE PORTA = microblaze_0_i_bram_ctrl_2_microblaze_0_bram_block
+ BUS_INTERFACE PORTB = microblaze_0_d_bram_ctrl_2_microblaze_0_bram_block
+END
+
+BEGIN microblaze
+ PARAMETER INSTANCE = microblaze_0
+ PARAMETER HW_VER = 8.40.b
+ PARAMETER C_INTERCONNECT = 2
+ PARAMETER C_USE_BARREL = 1
+ PARAMETER C_USE_FPU = 0
+ PARAMETER C_DEBUG_ENABLED = 1
+ PARAMETER C_ICACHE_BASEADDR = 0X00000000
+ PARAMETER C_ICACHE_HIGHADDR = 0X3FFFFFFF
+ PARAMETER C_USE_ICACHE = 0
+ PARAMETER C_ICACHE_ALWAYS_USED = 0
+ PARAMETER C_DCACHE_BASEADDR = 0X00000000
+ PARAMETER C_DCACHE_HIGHADDR = 0X3FFFFFFF
+ PARAMETER C_USE_DCACHE = 0
+ PARAMETER C_DCACHE_ALWAYS_USED = 0
+ PARAMETER C_FSL_LINKS = 1
+ PARAMETER C_USE_DIV = 1
+ BUS_INTERFACE M_AXI_DP = axi4lite_0
+ BUS_INTERFACE DEBUG = microblaze_0_debug
+ BUS_INTERFACE DLMB = microblaze_0_dlmb
+ BUS_INTERFACE ILMB = microblaze_0_ilmb
+ BUS_INTERFACE SFSL0 = fsl_v20_slave
+ BUS_INTERFACE MFSL0 = fsl_v20_master
+ PORT MB_RESET = proc_sys_reset_0_MB_Reset
+ PORT DBG_WAKEUP = microblaze_0_DBG_WAKEUP
+END
+
+BEGIN mdm
+ PARAMETER INSTANCE = debug_module
+ PARAMETER HW_VER = 2.10.a
+ PARAMETER C_INTERCONNECT = 2
+ PARAMETER C_USE_UART = 1
+ PARAMETER C_BASEADDR = 0x41400000
+ PARAMETER C_HIGHADDR = 0x4140ffff
+ BUS_INTERFACE S_AXI = axi4lite_0
+ BUS_INTERFACE MBDEBUG_0 = microblaze_0_debug
+ PORT Debug_SYS_Rst = proc_sys_reset_0_MB_Debug_Sys_Rst
+ PORT S_AXI_ACLK = clk_100_0000MHz
+END
+
+BEGIN clock_generator
+ PARAMETER INSTANCE = clock_generator_0
+ PARAMETER HW_VER = 4.03.a
+ PARAMETER C_CLKIN_FREQ = 100000000
+ PARAMETER C_CLKOUT0_FREQ = 100000000
+ PARAMETER C_CLKOUT0_GROUP = NONE
+ PORT LOCKED = proc_sys_reset_0_Dcm_locked
+ PORT CLKOUT0 = clk_100_0000MHz
+ PORT RST = RESET
+ PORT CLKIN = net_clock_generator_0_CLKIN
+END
+
+BEGIN axi_interconnect
+ PARAMETER INSTANCE = axi4lite_0
+ PARAMETER HW_VER = 1.06.a
+ PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0
+ PORT interconnect_aclk = clk_100_0000MHz
+ PORT INTERCONNECT_ARESETN = proc_sys_reset_0_Interconnect_aresetn
+END
+
+BEGIN axi_uartlite
+ PARAMETER INSTANCE = axi_uartlite_debug
+ PARAMETER HW_VER = 1.02.a
+ PARAMETER C_BAUDRATE = 115200
+ PARAMETER C_DATA_BITS = 8
+ PARAMETER C_USE_PARITY = 0
+ PARAMETER C_ODD_PARITY = 1
+ PARAMETER C_BASEADDR = 0x40620000
+ PARAMETER C_HIGHADDR = 0x4062ffff
+ BUS_INTERFACE S_AXI = axi4lite_0
+ PORT S_AXI_ACLK = clk_100_0000MHz
+ PORT TX = RS232_Uart_1_sout
+ PORT RX = RS232_Uart_1_sin
+END
+
+BEGIN axi_gpio
+ PARAMETER INSTANCE = axi_gpio_0
+ PARAMETER HW_VER = 1.01.b
+ PARAMETER C_BASEADDR = 0x40000000
+ PARAMETER C_HIGHADDR = 0x4000ffff
+ BUS_INTERFACE S_AXI = axi4lite_0
+ PORT S_AXI_ACLK = clk_100_0000MHz
+ PORT GPIO_IO_O = axi_gpio_0_GPIO_IO_O
+ PORT GPIO_IO_I = net_gpio_1_in
+END
+
+BEGIN axi_uartlite
+ PARAMETER INSTANCE = axi_uartlite_usrp
+ PARAMETER HW_VER = 1.02.a
+ PARAMETER C_BAUDRATE = 115200
+ PARAMETER C_USE_PARITY = 1
+ PARAMETER C_BASEADDR = 0x40600000
+ PARAMETER C_HIGHADDR = 0x4060ffff
+ BUS_INTERFACE S_AXI = axi4lite_0
+ PORT S_AXI_ACLK = clk_100_0000MHz
+ PORT RX = axi_uartlite_usrp_RX
+ PORT TX = axi_uartlite_usrp_TX
+END
+
+BEGIN fsl_external
+ PARAMETER INSTANCE = fsl_external_0
+ PARAMETER HW_VER = 1.00.a
+ BUS_INTERFACE SFSL = fsl_v20_master
+ BUS_INTERFACE MFSL = fsl_v20_slave
+ PORT FSL_Ext_S_Read = net_fsl_s_read
+ PORT FSL_Ext_M_Write = net_fsl_m_write
+ PORT FSL_Ext_M_Data = net_fsl_m_data
+ PORT FSL_Ext_M_Control = net_fsl_m_control
+END
+
+BEGIN fsl_v20
+ PARAMETER INSTANCE = fsl_v20_slave
+ PARAMETER HW_VER = 2.11.f
+ PARAMETER C_ASYNC_CLKS = 1
+ PARAMETER C_READ_CLOCK_PERIOD = 10000
+ PORT FSL_S_Clk = fsl_v20_slave_FSL_S_Clk
+ PORT FSL_M_Clk = net_fsl_m_clk
+END
+
+BEGIN fsl_v20
+ PARAMETER INSTANCE = fsl_v20_master
+ PARAMETER HW_VER = 2.11.f
+ PARAMETER C_ASYNC_CLKS = 1
+ PARAMETER C_READ_CLOCK_PERIOD = 10000
+ PORT FSL_S_Clk = net_fsl_s_clk
+ PORT FSL_M_Clk = fsl_v20_master_FSL_M_Clk
+END
+

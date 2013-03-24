@@ -1,1 +1,0 @@
-This is a MATLAB Script designed to read USRP data.  You record files with usrp_samples_to_file.exe and then use this program to plot them.  An example data file is included

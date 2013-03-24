@@ -29,14 +29,14 @@ module u2plus_core
 
    // Misc, debug
    output [7:0] leds,
-   //output [31:0] debug,
-   //output [1:0] debug_clk,
-   output [15:0] debug_out,
-   output        debug_clk_out,
-   input  [13:0] debug_bus,
-   output        debug_ack,
-   input         debug_req,
-   input         debug_clk_in,
+
+   // CRUSH (on debug pins)
+   input         dsp_clk_180,
+   output        RX_DATA_CLK_N,
+   output        RX_DATA_CLK_P,
+   output [13:0] RX_DATA_N,
+   output [13:0] RX_DATA_P,
+   input         UART_RX,
 
    // Expansion
    input exp_time_in,
@@ -768,179 +768,20 @@ module u2plus_core
       .exp_time_in(exp_time_in), .exp_time_out(exp_time_out), .good_sync(good_sync), .debug(debug_sync));
 
    // /////////////////////////////////////////////////////////////////////////////////////////
-   // Debug Pins
-   // CRUSH START
+   // CRUSH
 
-   wire [13:0] sine_out,cosine_out;
-   wire [7:0]  ext_mode;
-   wire        ext_mode_stb;
-   wire [15:0] ext_freq;
-   wire        ext_freq_stb;
-   wire [31:0] ext_echo;
-   wire        ext_echo_stb;
-   wire [7:0]  ext_testLengthLog;
-   wire        ext_testLengthLog_stb;
-
-   //read only version of bus
-   slave_decode_RO decode (
-    .clk(dsp_clk),
-    .rst(rst),
-    .clk_ext(debug_clk_in),
-    .REQ(debug_req),
-    .ACK(debug_ack),
-    .addr(debug_bus[13:8]),
-    .data(debug_bus[7:0]),
-    .mode(ext_mode),
-    .mode_stb(ext_mode_stb),
-    .echo(ext_echo),
-    .echo_stb(ext_echo_stb),
-    .freq(ext_freq),
-    .freq_stb(ext_freq_stb),
-    .testLengthLog(ext_testLengthLog),
-    .testLengthLog_stb(ext_testLengthLog_stb)
-    );
-
-   reg [14:0] adc_dataI,adc_dataQ;
-   reg [15:0] phase_inc,phase_inc_s1,phase_inc_s2,nco_data;
-   reg nco_we;
-
-   nco nco1 (
-      .clk(dsp_clk),
-      .we(nco_we),
-      .data(nco_data), // Bus [15 : 0]
-      .cosine(cosine_out), // Bus [13 : 0]
-      .sine(sine_out) // Bus [13 : 0]
-      );
-
-   always@(posedge dsp_clk) begin
-      if(dsp_rst == 1'b1) begin
-         nco_data <= 16'd0;
-         nco_we   <= 1'b0;
-      end
-      else begin
-         nco_we   <= 1'b0;
-         nco_data <= phase_inc;
-         phase_inc_s1 <= phase_inc;
-         phase_inc_s2 <= phase_inc_s1;
-         if(phase_inc_s2 != phase_inc) begin
-            nco_we   <= 1'b1;
-         end
-      end
-    end
-
-   reg [14:0] debugCounterI,debugCounterQ;
-   always@(posedge dsp_clk) begin
-      if(dsp_rst == 1'b1) begin
-         debugCounterI <= 15'd0;
-         debugCounterQ <= 15'd32768/2;
-      end
-      else begin
-         debugCounterI <= debugCounterI + 1'b1;
-         debugCounterQ <= debugCounterQ + 1'b1;
-      end
-   end
-
-   reg [14:0] TestPatternI, TestPatternQ;
-   reg [3:0] TestPattern;
-   always@(posedge dsp_clk) begin
-      if(dsp_rst == 1'b1) begin
-         TestPatternI   <= 15'h0000;
-         TestPatternQ   <= 15'hFFFF;
-         TestPattern    <= 3'd0;
-      end
-      else begin
-         if (TestPattern < 3'd5) begin
-            TestPattern    <= TestPattern + 1'b1;
-         end
-         else begin
-            TestPattern    <= 3'd0;
-         end
-         case(TestPattern)
-            3'd0: begin
-               TestPatternI   <= 15'h0000;
-               TestPatternQ   <= 15'hFFFF;
-            end
-            3'd1: begin
-               TestPatternI   <= 15'h0001;
-               TestPatternQ   <= 15'hFFFE;
-            end
-            3'd2: begin
-               TestPatternI   <= 15'h0002;
-               TestPatternQ   <= 15'hFFFD;
-            end
-            3'd3: begin
-               TestPatternI   <= 15'h0003;
-               TestPatternQ   <= 15'hFFFC;
-            end
-            3'd4: begin
-               TestPatternI   <= 15'hAAAA;
-               TestPatternQ   <= 15'h5555;
-            end
-            default: begin
-               TestPatternI   <= 15'h0000;
-               TestPatternQ   <= 15'h0000;
-            end
-         endcase
-      end
-   end
-
-   always@(posedge dsp_clk) begin
-      if(dsp_rst == 1'b1) begin
-         adc_dataI <= 15'hAAAA;
-         adc_dataQ <= 15'hBBBB;
-         phase_inc <= 16'd0;
-      end
-      else begin
-         phase_inc <= ext_freq;
-         case(ext_mode)
-            8'd0: begin             //mode 0 we forward the actual ADC signals
-               adc_dataI <= {adc_a[13],adc_a};
-               adc_dataQ <= {adc_b[13],adc_b};
-            end
-            8'd1: begin             //mode 1 we forward a fake sine / cosine
-               adc_dataI <= {sine_out[13],sine_out};
-               adc_dataQ <= {sine_out[13],cosine_out};
-            end
-            8'd2: begin             //mode 2 Test Pattern
-               adc_dataI <= TestPatternI;
-               adc_dataQ <= TestPatternQ;
-            end
-            8'd3: begin             //mode 3 is an up counter
-               adc_dataI <= debugCounterI;
-               adc_dataQ <= debugCounterQ;
-            end
-            8'd4: begin             //mode 4 is all off
-               adc_dataI <= 16'd0;
-               adc_dataQ <= 16'd0;
-            end
-            8'd5: begin             //mode 5 is all on
-               adc_dataI <= 16'hFFFF;
-               adc_dataQ <= 16'hFFFF;
-            end
-            8'd6: begin             //mode 6 is I off, Q on
-               adc_dataI <= 16'd0;
-               adc_dataQ <= 16'hFFFF;
-            end
-            default: begin
-               adc_dataI <= {adc_a,1'd0};
-               adc_dataQ <= {adc_a,1'd0};
-            end
-         endcase //case
-      end //else
-   end //always
-
-   ddr_data_out ddrOut (
-    .clk(dsp_clk),
-    .rst(dsp_rst),
-    .dataI(adc_dataI),
-    .dataQ(adc_dataQ),
-    .clkOut(debug_clk_out),
-    .dataOut(debug_out)
-    );
-
-   // CRUSH END
-
-   assign debug_gpio_0 = 32'd0;
-   assign debug_gpio_1 = 32'd0;
+   crush_intf crush_intf (
+     .clk(dsp_clk),
+     .clk_180(dsp_clk_180),
+     .reset(dsp_rst),
+     .RX_DATA_CLK_N(RX_DATA_CLK_N),
+     .RX_DATA_CLK_P(RX_DATA_CLK_P),
+     .RX_DATA_N(RX_DATA_N[13:0]),
+     .RX_DATA_P(RX_DATA_P[13:0]),
+     .UART_RX(UART_RX),
+     .adc_channel_a(adc_a),
+     .adc_channel_b(adc_b),
+     .adc_i(rx_fe_i),
+     .adc_q(rx_fe_q));
 
 endmodule // u2_core

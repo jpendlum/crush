@@ -1,0 +1,7 @@
+##############################################################################
+## Filename:          /home/jpendlum/crush/fpga-ml605/src/hdl/edk_pcores/MyProcessorIPLib/pcores/fsl_external_v1_00_a/data/fsl_external_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Fri Mar 15 17:02:41 2013 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib fsl_external_v1_00_a fsl_external vhdl
