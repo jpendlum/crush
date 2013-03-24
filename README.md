@@ -14,10 +14,8 @@ http://www.coe.neu.edu/Research/rcl//projects/CRUSH.php
 Directory Structure:
 
 - fpga-ml605: CRUSH platform ported to the Xilinx ML605 (Virtex 6) Development Board
-- fpga-ml707: CRUSH platform ported to the Xilinx ML707 (Virtex 7) Development Board
 - host: MATLAB code to receive / plot data from CRUSH and C code to initialize the USRP hardware
 - usrp-n210: Modified firmware for the USRP N210 to enable the debug port and interface with the CRUSH platform
-- pcb: Schematic, bill of materials, gerber, and drill files for the custom printed circuit board used to interface the USRP with the ML605 / ML707 board
 
 Copyright:  
 CRUSH is licensed under GPLv2: http://www.gnu.org/licenses/gpl-2.0.html
