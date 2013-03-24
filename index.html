@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="CRUSH : Cognitive Radio Universal Software Hardware" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>CRUSH</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jpendlum/crush">View on GitHub</a>
+
+          <h1 id="project_title">CRUSH</h1>
+          <h2 id="project_tagline">Cognitive Radio Universal Software Hardware</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jpendlum/crush/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jpendlum/crush/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Jonathon Pendlum (<a href="mailto:jon.pendlum@gmail.com">jon.pendlum@gmail.com</a>)<br>
+Miriam Leeser<br>
+Kaushik Chowdhury  </p>
+
+<p>Cognitive radio algorithms require low latency, high performance signal processing to make real time decisions for spectrum sharing. Researchers have turned to software defined radios (SDR) to implement their algorithms due to SDR’s dynamic configurability and ease of programming. However, state of the art software defined radios, such as Ettus Research’s Universal Software Radio Peripheral (USRP), rely on a host computer to perform the signal processing at the cost of data transfer latency.</p>
+
+<p>Our architecture, called CRUSH (Cognitive Radio Universal Software Hardware), reduces the data transfer latency by coupling a field programmable gate array (FPGA) with the USRP. The USRP forwards sampled data at full rate over a high-speed serial interface to the FPGA on a Xilinx ML605 board. This creates a hybrid software defined radio where the time critical signal processing is offloaded to the FPGA while the host computer implements higher level decisions. To demonstrate our platform we implemented spectrum sensing, a key step in cognitive radio algorithms that determines spectrum availability before transmitting. Spectrum sensing is inheriently sensitive to data delay; less latency reduces the chance for transmitting in an occupied channel. CRUSH’s implementation improves latency enabling faster response to changing wireless channel conditions.</p>
+
+<p><a href="http://www.coe.neu.edu/Research/rcl//projects/CRUSH.php">http://www.coe.neu.edu/Research/rcl//projects/CRUSH.php</a>  </p>
+
+<p>Directory Structure:</p>
+
+<ul>
+<li>fpga-ml605: CRUSH platform ported to the Xilinx ML605 (Virtex 6) Development Board</li>
+<li>host: MATLAB code to receive / plot data from CRUSH and C code to initialize the USRP hardware</li>
+<li>usrp-n210: Modified firmware for the USRP N210 to enable the debug port and interface with the CRUSH platform</li>
+</ul><p>Copyright:<br>
+CRUSH is licensed under GPLv2: <a href="http://www.gnu.org/licenses/gpl-2.0.html">http://www.gnu.org/licenses/gpl-2.0.html</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">CRUSH maintained by <a href="https://github.com/jpendlum">jpendlum</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
