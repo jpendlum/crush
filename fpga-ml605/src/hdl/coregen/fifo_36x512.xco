@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.4
-# Date: Sat Mar  9 20:26:43 2013
+# Date: Wed May 15 05:44:48 2013
 #
 ##############################################################
 #
@@ -85,7 +85,7 @@ CSET enable_ecc_wdch=false
 CSET enable_ecc_wrch=false
 CSET enable_read_channel=false
 CSET enable_read_pointer_increment_by2=false
-CSET enable_reset_synchronization=true
+CSET enable_reset_synchronization=false
 CSET enable_ruser=false
 CSET enable_tdata=false
 CSET enable_tdest=false
@@ -210,4 +210,4 @@ CSET wuser_width=1
 MISC pkg_timestamp=2012-11-19T12:39:56Z
 # END Extra information
 GENERATE
-# CRC: 628307de
+# CRC: 2ead02fc

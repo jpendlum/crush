@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 
 entity edge_detect is
   generic (
-    EDGE              : string  := "RISING"); -- Rising, Falling, or Both
+    EDGE              : string  := "RISING"); -- RISING, FALLING, or BOTH
   port (
     clk               : in    std_logic;      -- Clock
     reset             : in    std_logic;      -- Active high reset

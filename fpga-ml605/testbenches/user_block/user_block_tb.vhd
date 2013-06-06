@@ -57,28 +57,43 @@ architecture RTL of user_block_tb is
       edge_detect_stb   : out   std_logic);     -- Edge detected strobe
   end component;
 
-  component ddr_to_sdr
+  component usrp_ddr_intf
     generic (
-      DEVICE            : string  := "VIRTEX6";                         -- "VIRTEX5", VIRTEX6", "7SERIES"
-      BIT_WIDTH         : integer := 14;                                -- Input data width
-      USE_PHASE_SHIFT   : string  := "FALSE";                           -- "TRUE/FALSE", Init MMCM phase on reset
-      PHASE_SHIFT       : integer := 0);                                -- MMCM phase shift tap setting (0 - 55)
+      USE_PHASE_SHIFT         : string  := "FALSE";       -- "TRUE/FALSE", Init MMCM phase to MAN_PHASE_SHIFT on reset
+      MAN_PHASE_SHIFT         : integer := 0);            -- MMCM phase shift tap setting (0 - 55)
     port (
-      reset             : in    std_logic;                              -- Active high reset
-      -- Calibrate MMCM Phase
-      clk_mmcm_ps       : in    std_logic;                              -- MMCM phase shift clock
-      phase_inc_stb     : in    std_logic;                              -- Increment MMCM phase
-      phase_dec_stb     : in    std_logic;                              -- Decrement MMCM phase
-      phase_cnt         : out   std_logic_vector(5 downto 0);           -- Current phase shift, 0 - 55.
-      -- DDR interface
-      ddr_data_clk      : in    std_logic;                              -- DDR data clock (from pin)
-      ddr_data          : in    std_logic_vector(BIT_WIDTH-1 downto 0); -- DDR data (from pin)
-      clk_ddr           : out   std_logic;                              -- MMCM derived DDR clock
-      clk_ddr_locked    : out   std_logic;                              -- MMCM DDR data clock locked
-      -- SDR interface
-      clk_sdr           : in    std_logic;                              -- SDR data clock
-      sdr_data_vld      : out   std_logic;                              -- '1' = SDR data valid 
-      sdr_data          : out   std_logic_vector((2*BIT_WIDTH)-1 downto 0));
+      reset                   : in    std_logic;                      -- Asynchronous reset
+      -- USRP DDR interface control via UART (sampled by clk_ddr clock domain)
+      user_ddr_intf_mode      : in    std_logic_vector(7 downto 0);   -- USRP DDR interface mode
+      user_ddr_intf_mode_stb  : in    std_logic;                      -- Strobe to set mode
+      UART_TX                 : out   std_logic;                      -- UART
+      -- Physical Transmit / Receive data interface
+      RX_DATA_CLK_N           : in    std_logic;                      -- Receive data clock (N)
+      RX_DATA_CLK_P           : in    std_logic;                      -- Receive data clock (P)
+      RX_DATA_N               : in    std_logic_vector(6 downto 0);   -- Receive data (N)
+      RX_DATA_P               : in    std_logic_vector(6 downto 0);   -- Receive data (N)
+      TX_DATA_N               : out   std_logic_vector(7 downto 0);   -- Transmit data (N)
+      TX_DATA_P               : out   std_logic_vector(7 downto 0);   -- Transmit data (P)
+      clk_ddr                 : out   std_logic;                      -- MMCM derived clock
+      clk_ddr_2x              : out   std_logic;                      -- MMCM derived clock (2x)
+      clk_ddr_locked          : out   std_logic;                      -- MMCM DDR data clock locked
+      clk_ddr_phase           : out   std_logic_vector(9 downto 0);   -- MMCM phase offset, 0 - 559
+      -- Receive data FIFO interface
+      clk_rx_fifo             : in    std_logic;                      -- Receive data FIFO clock
+      rx_fifo_reset           : in    std_logic;                      -- Receive data FIFO reset
+      rx_fifo_data_i          : out   std_logic_vector(13 downto 0);  -- Receive data FIFO output
+      rx_fifo_data_q          : out   std_logic_vector(13 downto 0);  -- Receive data FIFO output
+      rx_fifo_rd_en           : in    std_logic;                      -- Receive data FIFO read enable
+      rx_fifo_underflow       : out   std_logic;                      -- Receive data FIFO underflow
+      rx_fifo_almost_empty    : out   std_logic;                      -- Receive data FIFO almost empty
+      -- Receive data FIFO interface
+      clk_tx_fifo             : in    std_logic;                      -- Transmit data FIFO clock
+      tx_fifo_reset           : in    std_logic;                      -- Transmit data FIFO reset
+      tx_fifo_data_i          : in    std_logic_vector(15 downto 0);  -- Transmit data FIFO output
+      tx_fifo_data_q          : in    std_logic_vector(15 downto 0);  -- Transmit data FIFO output
+      tx_fifo_wr_en           : in    std_logic;                      -- Transmit data FIFO write enable
+      tx_fifo_overflow        : out   std_logic;                      -- Transmit data FIFO overflow
+      tx_fifo_almost_full     : out   std_logic);                     -- Transmit data FIFO almost full
   end component;
 
   component spectrum_sense
@@ -91,98 +106,111 @@ architecture RTL of user_block_tb is
       busy                  : out   std_logic;                      -- Busy
       done_stb              : out   std_logic;                      -- FFT done, begin data unload on next cycle
       -- FFT
-      fft_size              : in    std_logic_vector(4 downto 0);   -- 0 = 64, 1 = 128, etc...
+      fft_size              : in    std_logic_vector(4 downto 0);   -- 0 = 64, 1 = 128, 2 = 256, etc...
       xn_real               : in    std_logic_vector(13 downto 0);  -- x(n) time domain signal (real)
       xn_imag               : in    std_logic_vector(13 downto 0);  -- x(n) time domain signal (imag)
       xk_valid              : out   std_logic;                      -- X(k) data valid
-      xk_real               : out   std_logic_vector(13 downto 0);  -- X(k) frequency domain signal (real)
-      xk_imag               : out   std_logic_vector(13 downto 0);  -- X(k) frequency domain signal (imag)
+      xk_real               : out   std_logic_vector(15 downto 0);  -- X(k) frequency domain signal (real)
+      xk_imag               : out   std_logic_vector(15 downto 0);  -- X(k) frequency domain signal (imag)
       xk_index              : out   std_logic_vector(12 downto 0);  -- k
       -- Threshold detection
-      xk_magnitude_squared  : out   std_logic_vector(28 downto 0);  -- Magnitude squared, X_r(k)^2 + X_i(k)^2
-      threshold             : in    std_logic_vector(28 downto 0);  -- Threshold (Magnitude squared)
+      xk_magnitude_squared  : out   std_logic_vector(31 downto 0);  -- Magnitude squared, X_r(k)^2 + X_i(k)^2
+      threshold             : in    std_logic_vector(31 downto 0);  -- Threshold (Magnitude squared)
       threshold_exceeded    : out   std_logic);                     -- Threshold exceeded. Aligned with X(k) data
   end component;
 
-component user_block_ctrl
-  generic (
-    DEVICE                      : string := "VIRTEX6");                 -- "VIRTEX5", VIRTEX6", "7SERIES"
-  port (
-    clk                         : in    std_logic;                      -- Clock
-    reset                       : in    std_logic;                      -- Active high reset
-    -- Network configuration
-    user_mac_addr_src           : in    std_logic_vector(47 downto 0);  -- Filter Source MAC address (0 for any)
-    user_mac_addr_dest          : in    std_logic_vector(47 downto 0);  -- Destination MAC address
-    user_ip_addr_src            : in    std_logic_vector(31 downto 0);  -- Filter Source IP address (0 for any)
-    user_ip_addr_dest           : in    std_logic_vector(31 downto 0);  -- Destination IP address
-    user_port_src               : in    std_logic_vector(15 downto 0);  -- Filter Source Port (0 for any)
-    user_port_dest              : in    std_logic_vector(15 downto 0);  -- Destination Port
-    user_payload_size           : in    std_logic_vector(10 downto 0);  -- Size of transmitted payload. Max 1472, reduce if needed.
-    -- Manual control interface (versus using UDP control packets)
-    override_network_ctrl       : in    std_logic;                      -- Override UDP control interface (set this first)
-    man_spec_sense_start_stb    : in    std_logic;                      -- Start spectrum sensing
-    man_send_fft_data           : in    std_logic;                      -- Enable sending FFT results via UDP
-    man_send_mag_squared        : in    std_logic;                      -- Enable sending FFT magnitude squared via UDP
-    man_send_threshold          : in    std_logic;                      -- Enable sending threshold results via UDP
-    man_fft_size                : in    std_logic_vector(4 downto 0);   -- FFT Size
-    man_threshold               : in    std_logic_vector(28 downto 0);  -- Threshold (Magnitude squared)
-    -- Spectrum Sensing User Block
-    spec_sense_start_stb        : out   std_logic;                      -- Enable sending threshold results via UDP
-    spec_sense_busy             : in    std_logic;                      -- Busy
-    spec_sense_done_stb         : in    std_logic;                      -- FFT done, begin data unload on next cycle
-    fft_size                    : out   std_logic_vector(4 downto 0);   -- 0 = 64, 1 = 128, etc...
-    xk_valid                    : in    std_logic;                      -- X(k) data valid
-    xk_real                     : in    std_logic_vector(13 downto 0);  -- X(k) frequency domain signal (real)
-    xk_imag                     : in    std_logic_vector(13 downto 0);  -- X(k) frequency domain signal (imag)
-    xk_index                    : in    std_logic_vector(12 downto 0);  -- k
-    xk_magnitude_squared        : in    std_logic_vector(28 downto 0);  -- Magnitude squared, X_r(k)^2 + X_i(k)^2
-    threshold                   : out   std_logic_vector(28 downto 0);  -- Threshold (Magnitude squared)
-    threshold_exceeded          : in    std_logic;                      -- Threshold exceeded. Aligned with X(k) data
-    -- User RX interface
-    -- User receive data filter. Payload is discarded if any of the following do not match.
-    -- If a value is set to 0, any value will be accepted.
-    rx_mac_addr_src             : out   std_logic_vector(47 downto 0);  -- Filter Source MAC address
-    rx_mac_addr_dest            : out   std_logic_vector(47 downto 0);  -- Filter Destination MAC address
-    rx_ip_addr_src              : out   std_logic_vector(31 downto 0);  -- Filter Source IP address
-    rx_ip_addr_dest             : out   std_logic_vector(31 downto 0);  -- Filter Destination IP address
-    rx_port_src                 : out   std_logic_vector(15 downto 0);  -- Filter Source Port
-    rx_port_dest                : out   std_logic_vector(15 downto 0);  -- Filter Destination Port
-    -- User RX data interface
-    rx_done_stb                 : in    std_logic;                      -- Received UDP transmission
-    rx_busy                     : in    std_logic;                      -- Receiving ethernet data
-    rx_frame_error              : in    std_logic;                      -- Error detected
-    rx_payload_size             : in    std_logic_vector(10 downto 0);  -- Number of payload data in bytes (max 1472)
-    rx_payload_data             : in    std_logic_vector(7 downto 0);   -- Output FIFO data
-    rx_payload_data_rd_en       : out   std_logic;                      -- Output FIFO read enable
-    rx_payload_almost_empty     : in    std_logic;                      -- Output FIFO almost empty
-    -- User TX interface
-    -- User TX Ethernet frame, IP header, & UDP header configuration
-    tx_mac_addr_src             : out   std_logic_vector(47 downto 0);  -- Source MAC address
-    tx_mac_addr_dest            : out   std_logic_vector(47 downto 0);  -- Destination MAC address
-    tx_ip_addr_src              : out   std_logic_vector(31 downto 0);  -- Source IP address
-    tx_ip_addr_dest             : out   std_logic_vector(31 downto 0);  -- Destination IP address
-    tx_port_src                 : out   std_logic_vector(15 downto 0);  -- Source Port
-    tx_port_dest                : out   std_logic_vector(15 downto 0);  -- Destination Port
-    -- User TX data interface
-    tx_start_stb                : out   std_logic;                      -- Start UDP transmission
-    tx_busy                     : in    std_logic;                      -- UDP transmission in process
-    tx_payload_size             : out   std_logic_vector(10 downto 0);  -- Number of payload data in bytes (max 1472)
-    tx_payload_data             : out   std_logic_vector(7 downto 0);   -- Input FIFO data
-    tx_payload_data_wr_en       : out   std_logic;                      -- Input FIFO write enable
-    tx_payload_almost_full      : in    std_logic;                      -- Input FIFO almost full
-    tx_payload_data_count       : in    std_logic_vector(10 downto 0)); -- Number of bytes in input FIFO
+  component bpsk_tx
+    port (
+      clk                   : in    std_logic;                      -- Clock
+      reset                 : in    std_logic;                      -- Active high reset
+      -- Control data bus
+      mode                  : in    std_logic_vector(1 downto 0);   -- 0 = BPSK, 1 = CW, 2 = PRN data, 3 = Test Pattern
+      freq                  : in    std_logic_vector(15 downto 0);  -- Carrier Offset Frequency
+      data_freq             : in    std_logic_vector(15 downto 0);  -- Psuedo-Random Data Frequency
+      -- I & Q data bus
+      i                     : out   std_logic_vector(15 downto 0);  -- Inphase
+      q                     : out   std_logic_vector(15 downto 0)); -- Quadrature
   end component;
 
-  component microblaze
+  component user_block_ctrl
+    generic (
+      DEVICE                      : string := "VIRTEX6");                 -- "VIRTEX5", VIRTEX6", "7SERIES"
     port (
-      clk                         : in    std_logic;
-      reset                       : in    std_logic;
-      uart_debug_rx               : in    std_logic;
-      uart_debug_tx               : out   std_logic;
-      uart_usrp_rx                : in    std_logic;
-      uart_usrp_tx                : out   std_logic;
-      gpio_1_in                   : in    std_logic_vector(31 downto 0);
-      gpio_1_out                  : out   std_logic_vector(31 downto 0));
+      clk                         : in    std_logic;                      -- Clock
+      reset                       : in    std_logic;                      -- Active high reset
+      -- Network configuration
+      user_mac_addr_src           : in    std_logic_vector(47 downto 0);  -- Filter Source MAC address (0 for any)
+      user_mac_addr_dest          : in    std_logic_vector(47 downto 0);  -- Destination MAC address
+      user_ip_addr_src            : in    std_logic_vector(31 downto 0);  -- Filter Source IP address (0 for any)
+      user_ip_addr_dest           : in    std_logic_vector(31 downto 0);  -- Destination IP address
+      user_port_src               : in    std_logic_vector(15 downto 0);  -- Filter Source Port (0 for any)
+      user_port_dest              : in    std_logic_vector(15 downto 0);  -- Destination Port
+      user_payload_size           : in    std_logic_vector(10 downto 0);  -- Size of transmitted payload. Max 1472, reduce if needed.
+      -- Manual control interface (versus using UDP control packets)
+      override_network_ctrl       : in    std_logic;                      -- Override UDP control interface (set this first)
+      man_spec_sense_start_stb    : in    std_logic;                      -- Start spectrum sensing
+      man_send_fft_data           : in    std_logic;                      -- Enable sending FFT results via UDP
+      man_send_mag_squared        : in    std_logic;                      -- Enable sending FFT magnitude squared via UDP
+      man_send_threshold          : in    std_logic;                      -- Enable sending threshold results via UDP
+      man_send_counting_pattern   : in    std_logic;                      -- Enable sending the debug counting pattern
+      man_fft_size                : in    std_logic_vector(4 downto 0);   -- FFT Size
+      man_threshold               : in    std_logic_vector(31 downto 0);  -- Threshold (Magnitude squared)
+      man_user_ddr_intf_mode      : in    std_logic_vector(7 downto 0);   -- USRP DDR interface mode
+      man_user_ddr_intf_mode_stb  : in    std_logic;                      -- Strobe to set mode
+      man_bpsk_mode               : in    std_logic_vector(1 downto 0);   -- 0 = BPSK, 1 = CW, 2 = PRN data, 3 = Test Pattern
+      man_bpsk_freq               : in    std_logic_vector(15 downto 0);  -- Carrier Offset Frequency
+      man_bpsk_data_freq          : in    std_logic_vector(15 downto 0);  -- Psuedo-Random Data Frequency
+      -- ML605 to USRP DDR Interface
+      user_ddr_intf_mode          : out   std_logic_vector(7 downto 0);   -- USRP DDR interface mode
+      user_ddr_intf_mode_stb      : out   std_logic;                      -- Strobe to set mode
+      -- BPSK Transmit Waveform Generator
+      bpsk_mode                   : out   std_logic_vector(1 downto 0);   -- 0 = BPSK, 1 = CW, 2 = PRN data, 3 = Test Pattern
+      bpsk_freq                   : out   std_logic_vector(15 downto 0);  -- Carrier Offset Frequency
+      bpsk_data_freq              : out   std_logic_vector(15 downto 0);  -- Psuedo-Random Data Frequency
+      -- Spectrum Sensing User Block
+      spec_sense_start_stb        : out   std_logic;                      -- Enable sending threshold results via UDP
+      spec_sense_busy             : in    std_logic;                      -- Busy
+      spec_sense_done_stb         : in    std_logic;                      -- FFT done, begin data unload on next cycle
+      fft_size                    : out   std_logic_vector(4 downto 0);   -- 0 = 64, 1 = 128, etc...
+      xk_valid                    : in    std_logic;                      -- X(k) data valid
+      xk_real                     : in    std_logic_vector(15 downto 0);  -- X(k) frequency domain signal (real)
+      xk_imag                     : in    std_logic_vector(15 downto 0);  -- X(k) frequency domain signal (imag)
+      xk_index                    : in    std_logic_vector(12 downto 0);  -- k
+      xk_magnitude_squared        : in    std_logic_vector(31 downto 0);  -- Magnitude squared, X_r(k)^2 + X_i(k)^2
+      threshold                   : out   std_logic_vector(31 downto 0);  -- Threshold (Magnitude squared)
+      threshold_exceeded          : in    std_logic;                      -- Threshold exceeded. Aligned with X(k) data
+      -- User RX interface
+      -- User receive data filter. Payload is discarded if any of the following do not match.
+      -- If a value is set to 0, any value will be accepted.
+      rx_mac_addr_src             : out   std_logic_vector(47 downto 0);  -- Filter Source MAC address
+      rx_mac_addr_dest            : out   std_logic_vector(47 downto 0);  -- Filter Destination MAC address
+      rx_ip_addr_src              : out   std_logic_vector(31 downto 0);  -- Filter Source IP address
+      rx_ip_addr_dest             : out   std_logic_vector(31 downto 0);  -- Filter Destination IP address
+      rx_port_src                 : out   std_logic_vector(15 downto 0);  -- Filter Source Port
+      rx_port_dest                : out   std_logic_vector(15 downto 0);  -- Filter Destination Port
+      -- User RX data interface
+      rx_done_stb                 : in    std_logic;                      -- Received UDP transmission
+      rx_busy                     : in    std_logic;                      -- Receiving ethernet data
+      rx_frame_error              : in    std_logic;                      -- Error detected
+      rx_payload_size             : in    std_logic_vector(10 downto 0);  -- Number of payload data in bytes (max 1472)
+      rx_payload_data             : in    std_logic_vector(7 downto 0);   -- Output FIFO data
+      rx_payload_data_rd_en       : out   std_logic;                      -- Output FIFO read enable
+      rx_payload_almost_empty     : in    std_logic;                      -- Output FIFO almost empty
+      -- User TX interface
+      -- User TX Ethernet frame, IP header, & UDP header configuration
+      tx_mac_addr_src             : out   std_logic_vector(47 downto 0);  -- Source MAC address
+      tx_mac_addr_dest            : out   std_logic_vector(47 downto 0);  -- Destination MAC address
+      tx_ip_addr_src              : out   std_logic_vector(31 downto 0);  -- Source IP address
+      tx_ip_addr_dest             : out   std_logic_vector(31 downto 0);  -- Destination IP address
+      tx_port_src                 : out   std_logic_vector(15 downto 0);  -- Source Port
+      tx_port_dest                : out   std_logic_vector(15 downto 0);  -- Destination Port
+      -- User TX data interface
+      tx_start_stb                : out   std_logic;                      -- Start UDP transmission
+      tx_busy                     : in    std_logic;                      -- UDP transmission in process
+      tx_payload_size             : out   std_logic_vector(10 downto 0);  -- Number of payload data in bytes (max 1472)
+      tx_payload_data             : out   std_logic_vector(7 downto 0);   -- Input FIFO data
+      tx_payload_data_wr_en       : out   std_logic;                      -- Input FIFO write enable
+      tx_payload_almost_full      : in    std_logic);                     -- Input FIFO almost full
   end component;
 
   component udp_tx
@@ -206,7 +234,6 @@ component user_block_ctrl
       payload_data          : in    std_logic_vector(7 downto 0);   -- Input FIFO data
       payload_data_wr_en    : in    std_logic;                      -- Input FIFO write enable
       payload_almost_full   : out   std_logic;                      -- Input FIFO almost full
-      payload_data_count    : out   std_logic_vector(10 downto 0);  -- Number of bytes in input FIFO
       -- Tri-Mode Ethernet MAC AXI Interface
       tx_mac_aclk           : in    std_logic;                      -- TX clock (same as clk)
       tx_reset              : in    std_logic;                      -- TX reset
@@ -249,6 +276,31 @@ component user_block_ctrl
       rx_axis_mac_tuser     : in    std_logic);                     -- Frame error
   end component;
 
+  component crush_ddr_intf is
+    port (
+      clk               : in    std_logic;            -- Clock (from ADC)
+      reset             : in    std_logic;            -- Active high reset
+      RX_DATA_CLK_N     : out   std_logic;            -- RX data clock (P)
+      RX_DATA_CLK_P     : out   std_logic;            -- RX data clock (N)
+      RX_DATA_N         : out   std_logic_vector(6 downto 0);  -- RX data (P)
+      RX_DATA_P         : out   std_logic_vector(6 downto 0);  -- RX data (N)
+      TX_DATA_N         : in    std_logic_vector(7 downto 0);  -- TX data (P)
+      TX_DATA_P         : in    std_logic_vector(7 downto 0);  -- TX data (N)
+      UART_RX           : in    std_logic;            -- Control interface from CRUSH (RX)
+      adc_channel_a     : in    std_logic_vector(13 downto 0);  -- ADC data channel a, Raw data from ADC
+      adc_channel_b     : in    std_logic_vector(13 downto 0);  -- ADC data channel b, Raw data from ADC
+      adc_i             : in    std_logic_vector(23 downto 0);  -- ADC data I, With DC offset correction & IQ Balance
+      adc_q             : in    std_logic_vector(23 downto 0);  -- ADC data Q, With DC offset correction & IQ Balance
+      dac_channel_a_in  : in    std_logic_vector(15 downto 0);  -- DAC data channel a from USRP (for muxing purposes)
+      dac_channel_b_in  : in    std_logic_vector(15 downto 0);  -- DAC data channel b from USRP (for muxing purposes)
+      dac_i_in          : in    std_logic_vector(23 downto 0);  -- DAC data I from USRP (for muxing purposes)
+      dac_q_in          : in    std_logic_vector(23 downto 0);  -- DAC data Q from USRP (for muxing purposes)
+      dac_channel_a     : out   std_logic_vector(15 downto 0);  -- DAC data channel a, Raw data to DAC
+      dac_channel_b     : out   std_logic_vector(15 downto 0);  -- DAC data channel b, Raw data to DAC
+      dac_i             : out   std_logic_vector(23 downto 0);  -- DAC data I, USRP corrects DC offset correction & IQ Balance
+      dac_q             : out   std_logic_vector(23 downto 0)); -- DAC data Q, USRP corrects DC offset correction & IQ Balance
+  end component;
+
   -----------------------------------------------------------------------------
   -- Constants Declaration
   -----------------------------------------------------------------------------
@@ -268,20 +320,21 @@ component user_block_ctrl
   signal clk_100MHz               : std_logic;
   signal clk_125MHz               : std_logic;
 
-  -- ddr_to_sdr
-  signal phase_inc                : std_logic;
-  signal phase_inc_stb            : std_logic;
-  signal phase_dec                : std_logic;
-  signal phase_dec_stb            : std_logic;
-  signal phase_cnt                : std_logic_vector(5 downto 0);
-  signal rx_data                  : std_logic_vector(27 downto 0);
-  signal rx_data_ddr              : std_logic_vector(13 downto 0);
-  signal rx_data_clk_ddr          : std_logic;
-  signal rx_data_clk              : std_logic;
-  signal rx_data_clk_locked       : std_logic;
-  signal reset_rx_data_clk        : std_logic;
-  signal adc_data_i               : std_logic_vector(13 downto 0);
-  signal adc_data_q               : std_logic_vector(13 downto 0);
+  -- usrp_ddr_intf
+  signal user_ddr_intf_mode         : std_logic_vector(7 downto 0);
+  signal user_ddr_intf_mode_stb     : std_logic;
+  signal rx_data_clk                : std_logic;
+  signal rx_data_clk_locked         : std_logic;
+  signal clk_ddr_phase              : std_logic_vector(9 downto 0);
+  signal reset_rx_data_clk          : std_logic;
+  signal adc_data_i                 : std_logic_vector(13 downto 0);
+  signal adc_data_q                 : std_logic_vector(13 downto 0);
+  signal dac_data_i                 : std_logic_vector(15 downto 0);
+  signal dac_data_q                 : std_logic_vector(15 downto 0);
+  signal rx_fifo_almost_empty       : std_logic;
+  signal rx_fifo_almost_empty_n     : std_logic;
+  signal tx_fifo_almost_full        : std_logic;
+  signal tx_fifo_almost_full_n      : std_logic;
 
   -- udp_rx, udp_tx
   signal rx_mac_addr_src          : std_logic_vector(47 downto 0);
@@ -315,7 +368,6 @@ component user_block_ctrl
   signal tx_payload_data          : std_logic_vector(7 downto 0);
   signal tx_payload_data_wr_en    : std_logic;
   signal tx_payload_almost_full   : std_logic;
-  signal tx_payload_data_count    : std_logic_vector(10 downto 0);
   signal tx_mac_aclk              : std_logic;
   signal tx_reset                 : std_logic;
   signal tx_axis_mac_tdata        : std_logic_vector(7 downto 0);
@@ -330,93 +382,151 @@ component user_block_ctrl
   signal spec_sense_done_stb      : std_logic;
   signal fft_size                 : std_logic_vector(4 downto 0);
   signal xk_valid                 : std_logic;
-  signal xk_real                  : std_logic_vector(13 downto 0);
-  signal xk_imag                  : std_logic_vector(13 downto 0);
+  signal xk_real                  : std_logic_vector(15 downto 0);
+  signal xk_imag                  : std_logic_vector(15 downto 0);
   signal xk_index                 : std_logic_vector(12 downto 0);
-  signal xk_magnitude_squared     : std_logic_vector(28 downto 0);
-  signal threshold                : std_logic_vector(28 downto 0);
+  signal xk_magnitude_squared     : std_logic_vector(31 downto 0);
+  signal threshold                : std_logic_vector(31 downto 0);
   signal threshold_exceeded       : std_logic;
 
+  -- bpsk_tx
+  signal bpsk_mode                  : std_logic_vector(1 downto 0);
+  signal bpsk_freq                  : std_logic_vector(15 downto 0);
+  signal bpsk_data_freq             : std_logic_vector(15 downto 0);
+
   -- user_block_ctrl
-  signal user_mac_addr_src        : std_logic_vector(47 downto 0);
-  signal user_mac_addr_dest       : std_logic_vector(47 downto 0);
-  signal user_ip_addr_src         : std_logic_vector(31 downto 0);
-  signal user_ip_addr_dest        : std_logic_vector(31 downto 0);
-  signal user_port_src            : std_logic_vector(15 downto 0);
-  signal user_port_dest           : std_logic_vector(15 downto 0);
-  signal user_payload_size        : std_logic_vector(10 downto 0);
-  signal override_network_ctrl    : std_logic;
-  signal man_spec_sense_start_stb : std_logic;
-  signal man_send_fft_data        : std_logic;
-  signal man_send_mag_squared     : std_logic;
-  signal man_send_threshold       : std_logic;
-  signal man_fft_size             : std_logic_vector(4 downto 0);
-  signal man_threshold            : std_logic_vector(28 downto 0);
+  signal user_mac_addr_src          : std_logic_vector(47 downto 0);
+  signal user_mac_addr_dest         : std_logic_vector(47 downto 0);
+  signal user_ip_addr_src           : std_logic_vector(31 downto 0);
+  signal user_ip_addr_dest          : std_logic_vector(31 downto 0);
+  signal user_port_src              : std_logic_vector(15 downto 0);
+  signal user_port_dest             : std_logic_vector(15 downto 0);
+  signal user_payload_size          : std_logic_vector(10 downto 0);
+  signal override_network_ctrl      : std_logic;
+  signal man_spec_sense_start_stb   : std_logic;
+  signal man_send_fft_data          : std_logic;
+  signal man_send_mag_squared       : std_logic;
+  signal man_send_threshold         : std_logic;
+  signal man_send_counting_pattern  : std_logic;
+  signal man_fft_size               : std_logic_vector(4 downto 0);
+  signal man_threshold              : std_logic_vector(31 downto 0);
+  signal man_user_ddr_intf_mode_stb : std_logic;
+  signal man_user_ddr_intf_mode     : std_logic_vector(7 downto 0);
+  signal man_bpsk_mode              : std_logic_vector(1 downto 0);
+  signal man_bpsk_freq              : std_logic_vector(15 downto 0);
+  signal man_bpsk_data_freq         : std_logic_vector(15 downto 0);
+
+  -- crush_ddr_intf
+  signal RX_DATA_CLK_N              : std_logic;
+  signal RX_DATA_CLK_P              : std_logic;
+  signal RX_DATA_N                  : std_logic_vector(6 downto 0);
+  signal RX_DATA_P                  : std_logic_vector(6 downto 0);
+  signal TX_DATA_N                  : std_logic_vector(7 downto 0);
+  signal TX_DATA_P                  : std_logic_vector(7 downto 0);
+  signal UART_TX                    : std_logic;
+  signal adc_channel_a              : std_logic_vector(13 downto 0);
+  signal adc_channel_b              : std_logic_vector(13 downto 0);
+  signal adc_i                      : std_logic_vector(23 downto 0);
+  signal adc_q                      : std_logic_vector(23 downto 0);
+  signal dac_channel_a_in           : std_logic_vector(15 downto 0);
+  signal dac_channel_b_in           : std_logic_vector(15 downto 0);
+  signal dac_i_in                   : std_logic_vector(23 downto 0);
+  signal dac_q_in                   : std_logic_vector(23 downto 0);
+  signal dac_channel_a              : std_logic_vector(15 downto 0);
+  signal dac_channel_b              : std_logic_vector(15 downto 0);
+  signal dac_i                      : std_logic_vector(23 downto 0);
+  signal dac_q                      : std_logic_vector(23 downto 0);
 
   -- Testbench signals
   type udp_packet_type is array(0 to 52) of std_logic_vector(7 downto 0);
-  signal udp_packet_1           : udp_packet_type := 
-    (x"18",x"03",x"73",x"29",x"AE",x"42",x"00",x"0A",x"35",x"02",
-     x"50",x"A3",x"08",x"00",x"45",x"00",x"00",x"27",x"00",x"00",
-     x"00",x"00",x"40",x"11",x"4C",x"77",x"0C",x"A8",x"0A",x"01",
-     x"0C",x"A8",x"0A",x"FF",x"23",x"82",x"23",x"83",x"00",x"13",
-     x"00",x"00",
-     x"A5",   -- Integrity Check Header
-     x"02",   -- Command: set configuration word
-     x"07",   -- Configuration word
-     x"03",   -- Command: set FFT size
-     x"1F",   -- FFT size 8192
-     x"04",   -- Command: set threshold
-     x"00",x"00",x"1F",x"FF", -- Threshold
-     x"01");  -- Command: start spectrum sensing
+  signal udp_packet_1 : udp_packet_type := 
+    (x"18",x"03",x"73",x"29",x"AE",x"42", -- MAC destination address
+     x"00",x"0A",x"35",x"02",x"50",x"A3", -- MAC source address
+     x"08",x"00",x"45",x"00",             -- Type, Version, IHL, DSCP, ECN
+     x"00",x"27",                         -- Total size (+28 due to IP and UDP header)
+     x"00",x"00",x"00",x"00",x"40",x"11", -- Indentification, Flags, Fragment Offset, Time To Live, Protocol (UDP)
+     x"4C",x"77",                         -- Checksum
+     x"0C",x"A8",x"0A",x"01",             -- Source IP
+     x"0C",x"A8",x"0A",x"FF",             -- Destination IP
+     x"23",x"82",                         -- Source Port
+     x"23",x"83",                         -- Destination Port
+     x"00",x"13",                         -- UDP Payload Size (+8 byte UDP header)
+     x"00",x"00",                         -- Checksum (0 is valid)
+     -- Commands
+     x"A5",                               -- Integrity Check Header
+     x"05",                               -- Command: Set USRP mode
+     x"11",                               -- ADC Raw Mode, DAC Raw Mode
+     x"06",                               -- Command: Set BPSK Mode
+     x"01",                               -- PRN Data
+     x"07",                               -- Command: Set BPSK Freq
+     x"01",x"FF",                         -- Frequency
+     x"08",                               -- Command: Set BPSK Data Freq
+     x"00",x"10");                        -- Frequency
+  signal udp_packet_2 : udp_packet_type := 
+    (x"18",x"03",x"73",x"29",x"AE",x"42", -- MAC destination address
+     x"00",x"0A",x"35",x"02",x"50",x"A3", -- MAC source address
+     x"08",x"00",x"45",x"00",             -- Type, Version, IHL, DSCP, ECN
+     x"00",x"27",                         -- Total size (+28 due to IP and UDP header)
+     x"00",x"00",x"00",x"00",x"40",x"11", -- Indentification, Flags, Fragment Offset, Time To Live, Protocol (UDP)
+     x"4C",x"77",                         -- Checksum
+     x"0C",x"A8",x"0A",x"01",             -- Source IP
+     x"0C",x"A8",x"0A",x"FF",             -- Destination IP
+     x"23",x"82",                         -- Source Port
+     x"23",x"83",                         -- Destination Port
+     x"00",x"13",                         -- UDP Payload Size (+8 byte UDP header)
+     x"00",x"00",                         -- Checksum (0 is valid)
+     -- Commands
+     x"A5",                               -- Integrity Check Header
+     x"02",                               -- Command: Set configuration word
+     x"07",                               -- Configuration word
+     x"03",                               -- Command: Set FFT size
+     x"1F",                               -- FFT size 8192
+     x"04",                               -- Command: Set threshold
+     x"00",x"00",x"1F",x"FF",             -- Threshold
+     x"01");                              -- Command: Start spectrum sensing
 
 begin
 
   -----------------------------------------------------------------------------
   -- ML605 <-> USRP Interface
   -----------------------------------------------------------------------------
-  inst_ddr_to_sdr : ddr_to_sdr
+  inst_usrp_ddr_intf : usrp_ddr_intf
     generic map (
-      DEVICE                      => DEVICE,
-      BIT_WIDTH                   => 14,
       USE_PHASE_SHIFT             => "FALSE",
-      PHASE_SHIFT                 => 0)
+      MAN_PHASE_SHIFT             => 0)
     port map (
       reset                       => reset,
-      clk_mmcm_ps                 => clk_100MHz,
-      phase_inc_stb               => phase_inc_stb,
-      phase_dec_stb               => phase_dec_stb,
-      phase_cnt                   => phase_cnt,
-      ddr_data_clk                => rx_data_clk_ddr,
-      ddr_data                    => rx_data_ddr,
+      user_ddr_intf_mode          => user_ddr_intf_mode,
+      user_ddr_intf_mode_stb      => user_ddr_intf_mode_stb,
+      UART_TX                     => UART_TX,
+      RX_DATA_CLK_N               => RX_DATA_CLK_N,
+      RX_DATA_CLK_P               => RX_DATA_CLK_P,
+      RX_DATA_N                   => RX_DATA_N,
+      RX_DATA_P                   => RX_DATA_P,
+      TX_DATA_N                   => TX_DATA_N,
+      TX_DATA_P                   => TX_DATA_P,
       clk_ddr                     => rx_data_clk,
+      clk_ddr_2x                  => open,
       clk_ddr_locked              => rx_data_clk_locked,
-      clk_sdr                     => rx_data_clk,
-      sdr_data_vld                => open,
-      sdr_data                    => rx_data);
+      clk_ddr_phase               => clk_ddr_phase,
+      clk_rx_fifo                 => rx_data_clk,
+      rx_fifo_reset               => '0',
+      rx_fifo_data_i              => adc_data_i,
+      rx_fifo_data_q              => adc_data_q,
+      rx_fifo_rd_en               => rx_fifo_almost_empty_n,
+      rx_fifo_underflow           => open,
+      rx_fifo_almost_empty        => rx_fifo_almost_empty,
+      clk_tx_fifo                 => rx_data_clk,
+      tx_fifo_reset               => '0',
+      tx_fifo_data_i              => dac_data_i,
+      tx_fifo_data_q              => dac_data_q,
+      tx_fifo_wr_en               => tx_fifo_almost_full_n,
+      tx_fifo_overflow            => open,
+      tx_fifo_almost_full         => tx_fifo_almost_full);
 
   reset_rx_data_clk               <= NOT(rx_data_clk_locked);
-  adc_data_i                      <= rx_data(27 downto 14);
-  adc_data_q                      <= rx_data(13 downto  0);
-
-  -- Rising edge detection for Microblaze GPIO to manually align DDR data interface
-  inst_edge_detect_phase_inc : edge_detect
-    generic map (
-      EDGE                        => "RISING")
-    port map (
-      clk                         => rx_data_clk,
-      reset                       => reset_rx_data_clk,
-      input_detect                => phase_inc,
-      edge_detect_stb             => phase_inc_stb);
-
-  inst_edge_detect_phase_dec : edge_detect
-    generic map (
-      EDGE                        => "RISING")
-    port map (
-      clk                         => rx_data_clk,
-      reset                       => reset_rx_data_clk,
-      input_detect                => phase_dec,
-      edge_detect_stb             => phase_dec_stb);
+  rx_fifo_almost_empty_n          <= NOT(rx_fifo_almost_empty);
+  tx_fifo_almost_full_n           <= NOT(tx_fifo_almost_full);
 
   -----------------------------------------------------------------------------
   -- ML605 <-> Host UDP packet interface
@@ -439,7 +549,6 @@ begin
       payload_data          => tx_payload_data,
       payload_data_wr_en    => tx_payload_data_wr_en,
       payload_almost_full   => tx_payload_almost_full,
-      payload_data_count    => tx_payload_data_count,
       tx_mac_aclk           => tx_mac_aclk,
       tx_reset              => tx_reset,
       tx_axis_mac_tdata     => tx_axis_mac_tdata,
@@ -501,6 +610,16 @@ begin
       threshold                   => threshold,
       threshold_exceeded          => threshold_exceeded);
 
+  inst_bpsk_tx : bpsk_tx
+    port map (
+      clk                         => rx_data_clk,
+      reset                       => reset_rx_data_clk,
+      mode                        => bpsk_mode,
+      freq                        => bpsk_freq,
+      data_freq                   => bpsk_data_freq,
+      i                           => dac_data_i,
+      q                           => dac_data_q);
+
   inst_user_block_ctrl : user_block_ctrl
     generic map (
       DEVICE                      => DEVICE)
@@ -519,8 +638,19 @@ begin
       man_send_fft_data           => man_send_fft_data,
       man_send_mag_squared        => man_send_mag_squared,
       man_send_threshold          => man_send_threshold,
+      man_send_counting_pattern   => man_send_counting_pattern,
       man_fft_size                => man_fft_size,
       man_threshold               => man_threshold,
+      man_user_ddr_intf_mode      => man_user_ddr_intf_mode,
+      man_user_ddr_intf_mode_stb  => man_user_ddr_intf_mode_stb,
+      man_bpsk_mode               => man_bpsk_mode,
+      man_bpsk_freq               => man_bpsk_freq,
+      man_bpsk_data_freq          => man_bpsk_data_freq,
+      user_ddr_intf_mode          => user_ddr_intf_mode,
+      user_ddr_intf_mode_stb      => user_ddr_intf_mode_stb,
+      bpsk_mode                   => bpsk_mode,
+      bpsk_freq                   => bpsk_freq,
+      bpsk_data_freq              => bpsk_data_freq,
       spec_sense_start_stb        => spec_sense_start_stb,
       spec_sense_busy             => spec_sense_busy,
       spec_sense_done_stb         => spec_sense_done_stb,
@@ -556,8 +686,7 @@ begin
       tx_payload_size             => tx_payload_size,
       tx_payload_data             => tx_payload_data,
       tx_payload_data_wr_en       => tx_payload_data_wr_en,
-      tx_payload_almost_full      => tx_payload_almost_full,
-      tx_payload_data_count       => tx_payload_data_count);
+      tx_payload_almost_full      => tx_payload_almost_full);
 
   -----------------------------------------------------------------------------
   -- Network configuration
@@ -576,10 +705,43 @@ begin
   man_send_threshold              <= '0';
   man_fft_size                    <= (others=>'0');
   man_threshold                   <= (others=>'0');
+  man_user_ddr_intf_mode_stb      <= '0';
+  man_user_ddr_intf_mode          <= (others=>'0');
+  man_bpsk_mode                   <= (others=>'0');
+  man_bpsk_freq                   <= (others=>'0');
+  man_bpsk_data_freq              <= (others=>'0');
 
-  -- Control
-  phase_inc                       <= '0';
-  phase_dec                       <= '0';
+  -----------------------------------------------------------------------------
+  -- CRUSH DDR Interface (on USRP)
+  -----------------------------------------------------------------------------
+  inst_crush_ddr_intf : crush_ddr_intf
+    port map (
+      clk                         => clk_100MHz,
+      reset                       => reset,
+      RX_DATA_CLK_N               => RX_DATA_CLK_N,
+      RX_DATA_CLK_P               => RX_DATA_CLK_P,
+      RX_DATA_N                   => RX_DATA_N,
+      RX_DATA_P                   => RX_DATA_P,
+      TX_DATA_N                   => TX_DATA_N,
+      TX_DATA_P                   => TX_DATA_P,
+      UART_RX                     => UART_TX,
+      adc_channel_a               => adc_channel_a,
+      adc_channel_b               => adc_channel_b,
+      adc_i                       => adc_i,
+      adc_q                       => adc_q,
+      dac_channel_a_in            => dac_channel_a_in,
+      dac_channel_b_in            => dac_channel_b_in,
+      dac_i_in                    => dac_i_in,
+      dac_q_in                    => dac_q_in,
+      dac_channel_a               => dac_channel_a,
+      dac_channel_b               => dac_channel_b,
+      dac_i                       => dac_i,
+      dac_q                       => dac_q);
+
+  dac_channel_a_in                <= (others=>'0');
+  dac_channel_b_in                <= (others=>'0');
+  dac_i_in                        <= (others=>'0');
+  dac_q_in                        <= (others=>'0');
 
   -------------------------------------------------------------------------------
   -- Create Clock Process, 100 MHz
@@ -633,18 +795,17 @@ begin
   proc_create_adc_data : process
     variable PHASE_ACCUM  : real := 0.0;
   begin
-    rx_data_clk_ddr       <= '0';
+    wait until reset = '1';
     loop
       PHASE_ACCUM         := PHASE_ACCUM + 2.0*MATH_PI*1.0/100.0;
       if (PHASE_ACCUM > 2.0*MATH_PI) then
         PHASE_ACCUM       := PHASE_ACCUM - 2.0*MATH_PI;
       end if;
-      rx_data_clk_ddr     <= '1';
-      rx_data_ddr         <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*cos(PHASE_ACCUM))),14));
+      adc_channel_a       <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*cos(PHASE_ACCUM))),14));
+      adc_i               <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*cos(PHASE_ACCUM))),24));
+      adc_channel_b       <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*sin(PHASE_ACCUM))),14));
+      adc_q               <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*sin(PHASE_ACCUM))),24));
       wait until clk_100MHz = '1';
-      rx_data_clk_ddr     <= '0';
-      rx_data_ddr         <= std_logic_vector(to_signed(integer(round((2.0**13.0-1.0)*sin(PHASE_ACCUM))),14));
-      wait until clk_100MHz = '0';
     end loop;
   end process;
 
@@ -688,12 +849,12 @@ begin
     wait until clk_125MHz = '1';
     wait until clk_125MHz = '1';
 
-    -- Wait for a bit then send again
-    wait for 1 ms;
+    -- Wait for interface to calibrate, then start spectrum sensing
+    wait for 2 ms;
     wait until clk_125MHz = '1';
 
     for i in 0 to 51 loop
-      rx_axis_mac_tdata   <= udp_packet_1(i);
+      rx_axis_mac_tdata   <= udp_packet_2(i);
       rx_axis_mac_tvalid  <= '1';
       wait until clk_125MHz = '1';
     end loop;
@@ -702,7 +863,7 @@ begin
     wait until clk_125MHz = '1';
     wait until clk_125MHz = '1';
     wait until clk_125MHz = '1';
-    rx_axis_mac_tdata     <= udp_packet_1(52);
+    rx_axis_mac_tdata     <= udp_packet_2(52);
     rx_axis_mac_tlast     <= '1';
     rx_axis_mac_tvalid    <= '1';
     wait until clk_125MHz = '1';

@@ -26,8 +26,8 @@
 --    All rights reserved.                                                    --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- You must compile the wrapper file fifo_36x512.vhd when simulating
--- the core, fifo_36x512. When compiling the wrapper file, be sure to
+-- You must compile the wrapper file fifo_1x_to_2x.vhd when simulating
+-- the core, fifo_1x_to_2x. When compiling the wrapper file, be sure to
 -- reference the XilinxCoreLib VHDL simulation library. For detailed
 -- instructions, please refer to the "CORE Generator Help".
 
@@ -40,52 +40,42 @@ USE ieee.std_logic_1164.ALL;
 -- synthesis translate_off
 LIBRARY XilinxCoreLib;
 -- synthesis translate_on
-ENTITY fifo_36x512 IS
+ENTITY fifo_1x_to_2x IS
   PORT (
+    rst : IN STD_LOGIC;
     wr_clk : IN STD_LOGIC;
-    wr_rst : IN STD_LOGIC;
     rd_clk : IN STD_LOGIC;
-    rd_rst : IN STD_LOGIC;
     din : IN STD_LOGIC_VECTOR(35 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+    dout : OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
-    overflow : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
-    almost_empty : OUT STD_LOGIC;
-    underflow : OUT STD_LOGIC;
-    rd_data_count : OUT STD_LOGIC_VECTOR(8 DOWNTO 0);
-    wr_data_count : OUT STD_LOGIC_VECTOR(8 DOWNTO 0)
+    almost_empty : OUT STD_LOGIC
   );
-END fifo_36x512;
+END fifo_1x_to_2x;
 
-ARCHITECTURE fifo_36x512_a OF fifo_36x512 IS
+ARCHITECTURE fifo_1x_to_2x_a OF fifo_1x_to_2x IS
 -- synthesis translate_off
-COMPONENT wrapped_fifo_36x512
+COMPONENT wrapped_fifo_1x_to_2x
   PORT (
+    rst : IN STD_LOGIC;
     wr_clk : IN STD_LOGIC;
-    wr_rst : IN STD_LOGIC;
     rd_clk : IN STD_LOGIC;
-    rd_rst : IN STD_LOGIC;
     din : IN STD_LOGIC_VECTOR(35 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
-    dout : OUT STD_LOGIC_VECTOR(35 DOWNTO 0);
+    dout : OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
     full : OUT STD_LOGIC;
     almost_full : OUT STD_LOGIC;
-    overflow : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
-    almost_empty : OUT STD_LOGIC;
-    underflow : OUT STD_LOGIC;
-    rd_data_count : OUT STD_LOGIC_VECTOR(8 DOWNTO 0);
-    wr_data_count : OUT STD_LOGIC_VECTOR(8 DOWNTO 0)
+    almost_empty : OUT STD_LOGIC
   );
 END COMPONENT;
 
 -- Configuration specification
-  FOR ALL : wrapped_fifo_36x512 USE ENTITY XilinxCoreLib.fifo_generator_v9_3(behavioral)
+  FOR ALL : wrapped_fifo_1x_to_2x USE ENTITY XilinxCoreLib.fifo_generator_v9_3(behavioral)
     GENERIC MAP (
       c_add_ngc_constraint => 0,
       c_application_type_axis => 0,
@@ -122,9 +112,9 @@ END COMPONENT;
       c_din_width_wdch => 64,
       c_din_width_wrch => 2,
       c_dout_rst_val => "0",
-      c_dout_width => 36,
+      c_dout_width => 18,
       c_enable_rlocs => 0,
-      c_enable_rst_sync => 0,
+      c_enable_rst_sync => 1,
       c_error_injection_type => 0,
       c_error_injection_type_axis => 0,
       c_error_injection_type_rach => 0,
@@ -132,7 +122,7 @@ END COMPONENT;
       c_error_injection_type_wach => 0,
       c_error_injection_type_wdch => 0,
       c_error_injection_type_wrch => 0,
-      c_family => "virtex6",
+      c_family => "spartan3",
       c_full_flags_rst_val => 1,
       c_has_almost_empty => 1,
       c_has_almost_full => 1,
@@ -162,22 +152,22 @@ END COMPONENT;
       c_has_int_clk => 0,
       c_has_master_ce => 0,
       c_has_meminit_file => 0,
-      c_has_overflow => 1,
+      c_has_overflow => 0,
       c_has_prog_flags_axis => 0,
       c_has_prog_flags_rach => 0,
       c_has_prog_flags_rdch => 0,
       c_has_prog_flags_wach => 0,
       c_has_prog_flags_wdch => 0,
       c_has_prog_flags_wrch => 0,
-      c_has_rd_data_count => 1,
+      c_has_rd_data_count => 0,
       c_has_rd_rst => 0,
       c_has_rst => 1,
       c_has_slave_ce => 0,
       c_has_srst => 0,
-      c_has_underflow => 1,
+      c_has_underflow => 0,
       c_has_valid => 0,
       c_has_wr_ack => 0,
-      c_has_wr_data_count => 1,
+      c_has_wr_data_count => 0,
       c_has_wr_rst => 0,
       c_implementation_type => 2,
       c_implementation_type_axis => 1,
@@ -211,14 +201,14 @@ END COMPONENT;
       c_prog_empty_type_wach => 0,
       c_prog_empty_type_wdch => 0,
       c_prog_empty_type_wrch => 0,
-      c_prog_full_thresh_assert_val => 511,
+      c_prog_full_thresh_assert_val => 509,
       c_prog_full_thresh_assert_val_axis => 1023,
       c_prog_full_thresh_assert_val_rach => 1023,
       c_prog_full_thresh_assert_val_rdch => 1023,
       c_prog_full_thresh_assert_val_wach => 1023,
       c_prog_full_thresh_assert_val_wdch => 1023,
       c_prog_full_thresh_assert_val_wrch => 1023,
-      c_prog_full_thresh_negate_val => 510,
+      c_prog_full_thresh_negate_val => 508,
       c_prog_full_type => 0,
       c_prog_full_type_axis => 0,
       c_prog_full_type_rach => 0,
@@ -227,10 +217,10 @@ END COMPONENT;
       c_prog_full_type_wdch => 0,
       c_prog_full_type_wrch => 0,
       c_rach_type => 0,
-      c_rd_data_count_width => 9,
-      c_rd_depth => 512,
+      c_rd_data_count_width => 10,
+      c_rd_depth => 1024,
       c_rd_freq => 1,
-      c_rd_pntr_width => 9,
+      c_rd_pntr_width => 10,
       c_rdch_type => 0,
       c_reg_slice_mode_axis => 0,
       c_reg_slice_mode_rach => 0,
@@ -280,25 +270,20 @@ END COMPONENT;
 -- synthesis translate_on
 BEGIN
 -- synthesis translate_off
-U0 : wrapped_fifo_36x512
+U0 : wrapped_fifo_1x_to_2x
   PORT MAP (
+    rst => rst,
     wr_clk => wr_clk,
-    wr_rst => wr_rst,
     rd_clk => rd_clk,
-    rd_rst => rd_rst,
     din => din,
     wr_en => wr_en,
     rd_en => rd_en,
     dout => dout,
     full => full,
     almost_full => almost_full,
-    overflow => overflow,
     empty => empty,
-    almost_empty => almost_empty,
-    underflow => underflow,
-    rd_data_count => rd_data_count,
-    wr_data_count => wr_data_count
+    almost_empty => almost_empty
   );
 -- synthesis translate_on
 
-END fifo_36x512_a;
+END fifo_1x_to_2x_a;

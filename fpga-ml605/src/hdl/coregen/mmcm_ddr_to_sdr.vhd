@@ -55,12 +55,13 @@
 -- "Output    Output      Phase     Duty      Pk-to-Pk        Phase"
 -- "Clock    Freq (MHz) (degrees) Cycle (%) Jitter (ps)  Error (ps)"
 ------------------------------------------------------------------------------
--- CLK_OUT1___100.000______0.000______50.0______130.958_____98.575
+-- CLK_OUT1___100.000______0.000______50.0______112.316_____89.971
+-- CLK_OUT2___200.000______0.000______50.0_______98.146_____89.971
 --
 ------------------------------------------------------------------------------
 -- "Input Clock   Freq (MHz)    Input Jitter (UI)"
 ------------------------------------------------------------------------------
--- __primary_________100.000____________0.010
+-- __primary_________200.000____________0.010
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -77,6 +78,7 @@ port
   CLKIN_100MHz           : in     std_logic;
   -- Clock out ports
   CLKOUT_100MHz          : out    std_logic;
+  CLKOUT_200MHz          : out    std_logic;
   -- Dynamic phase shift ports
   PSCLK             : in     std_logic;
   PSEN              : in     std_logic;
@@ -90,7 +92,7 @@ end mmcm_ddr_to_sdr;
 
 architecture xilinx of mmcm_ddr_to_sdr is
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of xilinx : architecture is "mmcm_ddr_to_sdr,clk_wiz_v3_6,{component_name=mmcm_ddr_to_sdr,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=true,use_inclk_switchover=false,use_dyn_reconfig=false,feedback_source=FDBK_AUTO,primtype_sel=MMCM_ADV,num_out_clk=1,clkin1_period=10.000,clkin2_period=10.000,use_power_down=false,use_reset=true,use_locked=true,use_inclk_stopped=false,use_status=false,use_freeze=false,use_clk_valid=false,feedback_type=SINGLE,clock_mgr_type=MANUAL,manual_override=false}";
+  attribute CORE_GENERATION_INFO of xilinx : architecture is "mmcm_ddr_to_sdr,clk_wiz_v3_6,{component_name=mmcm_ddr_to_sdr,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=true,use_inclk_switchover=false,use_dyn_reconfig=false,feedback_source=FDBK_AUTO,primtype_sel=MMCM_ADV,num_out_clk=2,clkin1_period=5.000,clkin2_period=10.0,use_power_down=false,use_reset=true,use_locked=true,use_inclk_stopped=false,use_status=false,use_freeze=false,use_clk_valid=false,feedback_type=SINGLE,clock_mgr_type=MANUAL,manual_override=false}";
   -- Input clock buffering / unused connectors
   signal clkin1      : std_logic;
   -- Output clock buffering / unused connectors
@@ -99,7 +101,7 @@ architecture xilinx of mmcm_ddr_to_sdr is
   signal clkfboutb_unused : std_logic;
   signal clkout0          : std_logic;
   signal clkout0b_unused  : std_logic;
-  signal clkout1_unused   : std_logic;
+  signal clkout1          : std_logic;
   signal clkout1b_unused  : std_logic;
   signal clkout2_unused   : std_logic;
   signal clkout2b_unused  : std_logic;
@@ -135,14 +137,18 @@ begin
     COMPENSATION         => "ZHOLD",
     STARTUP_WAIT         => FALSE,
     DIVCLK_DIVIDE        => 1,
-    CLKFBOUT_MULT_F      => 10.000,
+    CLKFBOUT_MULT_F      => 5.000,
     CLKFBOUT_PHASE       => 0.000,
     CLKFBOUT_USE_FINE_PS => FALSE,
     CLKOUT0_DIVIDE_F     => 10.000,
     CLKOUT0_PHASE        => 0.000,
     CLKOUT0_DUTY_CYCLE   => 0.500,
-    CLKOUT0_USE_FINE_PS  => FALSE,
-    CLKIN1_PERIOD        => 10.000,
+    CLKOUT0_USE_FINE_PS  => TRUE,
+    CLKOUT1_DIVIDE       => 5,
+    CLKOUT1_PHASE        => 0.000,
+    CLKOUT1_DUTY_CYCLE   => 0.500,
+    CLKOUT1_USE_FINE_PS  => TRUE,
+    CLKIN1_PERIOD        => 5.000,
     REF_JITTER1          => 0.010)
   port map
     -- Output clocks
@@ -150,7 +156,7 @@ begin
     CLKFBOUTB           => clkfboutb_unused,
     CLKOUT0             => clkout0,
     CLKOUT0B            => clkout0b_unused,
-    CLKOUT1             => clkout1_unused,
+    CLKOUT1             => clkout1,
     CLKOUT1B            => clkout1b_unused,
     CLKOUT2             => clkout2_unused,
     CLKOUT2B            => clkout2b_unused,
@@ -199,5 +205,10 @@ begin
     I   => clkout0);
 
 
+
+  clkout2_buf : BUFG
+  port map
+   (O   => CLKOUT_200MHz,
+    I   => clkout1);
 
 end xilinx;

@@ -23,196 +23,88 @@
 #-  xc6vlx240t-ff1156-1
 #------------------------------------------------------------------------------
 
-NET "clk" TNM_NET = clk;
-TIMESPEC TS_clk = PERIOD "clk" 66 MHz HIGH 50%;
-
-NET "Button_CPU_RESET" LOC = "H10" | IOSTANDARD = SSTL15 | PULLUP;
-NET "Button_CPU_RESET" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "BUTTON_CPU_RESET" LOC = "H10" | IOSTANDARD = SSTL15 | PULLUP;
 #66 MHz clock
-NET "clk_66" LOC = "U23" | IOSTANDARD = LVCMOS25;
-NET "clk_200_n" LOC = "H9" | IOSTANDARD = LVDS_25;
-NET "clk_200_p" LOC = "J9" | IOSTANDARD = LVDS_25;
+NET "CLK_OSC_66MHZ" LOC = "U23" | IOSTANDARD = LVCMOS25;
+NET "CLK_OSC_200MHZ_N" LOC = "H9" | IOSTANDARD = LVDS_25;
+NET "CLK_OSC_200MHZ_P" LOC = "J9" | IOSTANDARD = LVDS_25;
 
-NET "USB_RX" LOC = "J24" | IOSTANDARD = LVCMOS25;
-NET "USB_TX" LOC = "J25" | IOSTANDARD = LVCMOS25;
-NET "LEDs<0>" LOC = "AD21" | IOSTANDARD = LVCMOS25;
-NET "LEDs<1>" LOC = "AE21" | IOSTANDARD = LVCMOS25;
-NET "LEDs<2>" LOC = "AH27" | IOSTANDARD = LVCMOS25;
-NET "LEDs<3>" LOC = "AH28" | IOSTANDARD = LVCMOS25;
-NET "LED2<0>" LOC = "AC22" | IOSTANDARD = LVCMOS25;
-NET "LED2<1>" LOC = "AC24" | IOSTANDARD = LVCMOS25;
-NET "LED2<2>" LOC = "AE22" | IOSTANDARD = LVCMOS25;
-NET "LED2<3>" LOC = "AE23" | IOSTANDARD = LVCMOS25;
-NET "LED2<4>" LOC = "AB23" | IOSTANDARD = LVCMOS25;
-NET "LED2<5>" LOC = "AG23" | IOSTANDARD = LVCMOS25;
-NET "LED2<6>" LOC = "AD24" | IOSTANDARD = LVCMOS25;
-NET "LED2<7>" LOC = "AP24" | IOSTANDARD = LVCMOS25;
+NET "UART_DEBUG_RX" LOC = "J24" | IOSTANDARD = LVCMOS25;
+NET "UART_DEBUG_TX" LOC = "J25" | IOSTANDARD = LVCMOS25;
 
-NET "DIP<0>" LOC = "D22" | IOSTANDARD = LVCMOS15;
-NET "DIP<1>" LOC = "C22" | IOSTANDARD = LVCMOS15;
-NET "DIP<2>" LOC = "L21" | IOSTANDARD = LVCMOS15;
-NET "DIP<3>" LOC = "L20" | IOSTANDARD = LVCMOS15;
-NET "DIP<4>" LOC = "C18" | IOSTANDARD = LVCMOS15;
-NET "DIP<5>" LOC = "B18" | IOSTANDARD = LVCMOS15;
-NET "DIP<6>" LOC = "K22" | IOSTANDARD = LVCMOS15;
-NET "DIP<7>" LOC = "K21" | IOSTANDARD = LVCMOS15;
+NET "GPIO_LED<0>" LOC = "AC22" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<1>" LOC = "AC24" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<2>" LOC = "AE22" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<3>" LOC = "AE23" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<4>" LOC = "AB23" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<5>" LOC = "AG23" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<6>" LOC = "AE24" | IOSTANDARD = LVCMOS25;
+NET "GPIO_LED<7>" LOC = "AD24" | IOSTANDARD = LVCMOS25;
 
-NET "Button_N"  LOC = "A19" | IOSTANDARD = LVCMOS15;
-NET "Button_S"  LOC = "A18" | IOSTANDARD = LVCMOS15;
-NET "Button_E"  LOC = "G17" | IOSTANDARD = LVCMOS15;
-NET "Button_W"  LOC = "H17" | IOSTANDARD = LVCMOS15;
-NET "Button_C"  LOC = "G26" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<0>" LOC = "D22" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<1>" LOC = "C22" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<2>" LOC = "L21" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<3>" LOC = "L20" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<4>" LOC = "C18" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<5>" LOC = "B18" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<6>" LOC = "K22" | IOSTANDARD = LVCMOS15;
+NET "GPIO_DIP_SW<7>" LOC = "K21" | IOSTANDARD = LVCMOS15;
 
-NET "LED_test" LOC = "AH24" | IOSTANDARD = LVCMOS25;
+NET "BUTTON_N" LOC = "A19" | IOSTANDARD = LVCMOS15;
+NET "BUTTON_S" LOC = "A18" | IOSTANDARD = LVCMOS15;
+NET "BUTTON_E" LOC = "G17" | IOSTANDARD = LVCMOS15;
+NET "BUTTON_W" LOC = "H17" | IOSTANDARD = LVCMOS15;
+NET "BUTTON_C" LOC = "G26" | IOSTANDARD = LVCMOS15;
+
+NET "LED_N" LOC = "AH27" | IOSTANDARD = LVCMOS15;
+NET "LED_S" LOC = "AH28" | IOSTANDARD = LVCMOS15;
+NET "LED_E" LOC = "AE21" | IOSTANDARD = LVCMOS15;
+NET "LED_W" LOC = "AD21" | IOSTANDARD = LVCMOS15;
+NET "LED_C" LOC = "AP24" | IOSTANDARD = LVCMOS15;
 
 # -----------------------------------------------------------------------------
 # USRP Debug Port to ML605
 # -----------------------------------------------------------------------------
 
 # All I/O in Bank 13
-NET "RX_DATA_CLK_N" LOC = AC29 | IOSTANDARD = LVCMOS25; # SRCC
-NET "RX_DATA_CLK_P" LOC = AD29 | IOSTANDARD = LVCMOS25; # SRCC
-NET "RX_DATA_N[0]"  LOC = AC25 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[0]"  LOC = AB25 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[1]"  LOC = Y26  | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[1]"  LOC = AA25 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[2]"  LOC = AC28 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[2]"  LOC = AB28 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[3]"  LOC = AC27 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[3]"  LOC = AB27 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[4]"  LOC = AA29 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[4]"  LOC = AA28 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[5]"  LOC = AB26 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[5]"  LOC = AA26 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[6]"  LOC = AF31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[6]"  LOC = AG31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[7]"  LOC = AE33 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[7]"  LOC = AF33 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[8]"  LOC = AB31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[8]"  LOC = AB30 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[9]"  LOC = AG32 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[9]"  LOC = AG33 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[10]" LOC = AE32 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[10]" LOC = AD32 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[11]" LOC = AD31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[11]" LOC = AE31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[12]" LOC = AA31 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[12]" LOC = AA30 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_N[13]" LOC = AC32 | IOSTANDARD = LVCMOS25;
-NET "RX_DATA_P[13]" LOC = AB32 | IOSTANDARD = LVCMOS25;
-NET "SPARE"         LOC = AB33 | IOSTANDARD = LVCMOS25;
-NET "SPARE"         LOC = AC33 | IOSTANDARD = LVCMOS25;
-NET "UART_TX"       LOC = AC34 | IOSTANDARD = LVCMOS25; # Not a differential pair on USRP
-NET "UART_RX"       LOC = AD34 | IOSTANDARD = LVCMOS25; # Not a differential pair on USRP
-
-# Original before mapping
-#NET "Mic1DE<0>" LOC = "AF33"; ## F5 on J64
-#NET "Mic1Clk<0>" LOC = "AE33"; ## F4 on J64
-#NET "Mic1DE<15>" LOC = "AC29"; ## E3 on J64
-#NET "Mic1Clk<1>" LOC = "AD29"; ## E2 on J64
-#NET "Mic1DE<1>" LOC = "AC25"; ## K8 on J64
-#NET "Mic1DE<2>" LOC = "AB25"; ## K7 on J64
-#NET "Mic1DE<3>" LOC = "Y26"; ## J7 on J64
-#NET "Mic1DE<4>" LOC = "AA25"; ## J6 on J64
-#NET "Mic1DE<5>" LOC = "AC28"; ## F8 on J64
-#NET "Mic1DE<6>" LOC = "AB28"; ## F7 on J64
-#NET "Mic1DE<7>" LOC = "AC27"; ## E7 on J64
-#NET "Mic1DE<8>" LOC = "AB27"; ## E6 on J64
-#NET "Mic1DE<9>" LOC = "AA29"; ## K11 on J64
-#NET "Mic1DE<10>" LOC = "AA28"; ## K10 on J64
-#NET "Mic1DE<11>" LOC = "AB26"; ## J10 on J64
-#NET "Mic1DE<12>" LOC = "AA26"; ## J9 on J64
-#NET "Mic1DE<13>" LOC = "AF31"; ## F11 on J64
-#NET "Mic1DE<14>" LOC = "AG31"; ## F10 on J64
-#NET "Mic1DO<0>" LOC = "AB31"; ## E10 on J64
-#NET "Mic1DO<1>" LOC = "AB30"; ## E9 on J64
-#NET "Mic1DO<15>" LOC = "AC34"; ## K14 on J64
-#NET "Mic1DO<2>" LOC = "AD34"; ## K13 on J64
-#NET "Mic1DO<3>" LOC = "AG32"; ## J13 on J64
-#NET "Mic1DO<4>" LOC = "AG33"; ## J12 on J64
-#NET "Mic1DO<5>" LOC = "AE32"; ## F14 on J64
-#NET "Mic1DO<6>" LOC = "AD32"; ## F13 on J64
-#NET "Mic1DO<7>" LOC = "AD31"; ## E13 on J64
-#NET "Mic1DO<8>" LOC = "AE31"; ## E12 on J64
-#NET "Mic1DO<9>" LOC = "AA31"; ## J16 on J64
-#NET "Mic1DO<10>" LOC = "AA30"; ## J15 on J64
-#NET "Mic1DO<11>" LOC = "AC32"; ## F17 on J64
-#NET "Mic1DO<12>" LOC = "AB32"; ## F16 on J64
-#NET "Mic1DO<13>" LOC = "AB33"; ## E16 on J64
-#NET "Mic1DO<14>" LOC = "AC33"; ## E15 on J64
+NET "RX_DATA_CLK_N" LOC = "AC29" | IOSTANDARD = LVDS_25; # SRCC
+NET "RX_DATA_CLK_P" LOC = "AD29" | IOSTANDARD = LVDS_25; # SRCC
+NET "RX_DATA_N[0]"  LOC = "AC25" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[0]"  LOC = "AB25" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[1]"  LOC = "Y26"  | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[1]"  LOC = "AA25" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[2]"  LOC = "AC28" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[2]"  LOC = "AB28" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[3]"  LOC = "AC27" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[3]"  LOC = "AB27" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[4]"  LOC = "AA29" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[4]"  LOC = "AA28" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[5]"  LOC = "AB26" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[5]"  LOC = "AA26" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_N[6]"  LOC = "AF31" | IOSTANDARD = LVDS_25;
+NET "RX_DATA_P[6]"  LOC = "AG31" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[0]"  LOC = "AF33" | IOSTANDARD = LVDS_25; # Routed wrong polarity on Custom PCB (N->P)
+NET "TX_DATA_P[0]"  LOC = "AE33" | IOSTANDARD = LVDS_25; # Routed wrong polarity on Custom PCB (P->N)
+NET "TX_DATA_N[1]"  LOC = "AB31" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[1]"  LOC = "AB30" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[2]"  LOC = "AG32" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[2]"  LOC = "AG33" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[3]"  LOC = "AE32" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[3]"  LOC = "AD32" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[4]"  LOC = "AD31" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[4]"  LOC = "AE31" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[5]"  LOC = "AA31" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[5]"  LOC = "AA30" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[6]"  LOC = "AC32" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[6]"  LOC = "AB32" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_N[7]"  LOC = "AB33" | IOSTANDARD = LVDS_25;
+NET "TX_DATA_P[7]"  LOC = "AC33" | IOSTANDARD = LVDS_25;
+NET "UART_TX"       LOC = "AC34" | IOSTANDARD = LVCMOS25; # Not a differential pair on USRP
+NET "SPARE"         LOC = "AD34" | IOSTANDARD = LVCMOS25; # Not a differential pair on USRP
 
 # -----------------------------------------------------------------------------
 # Gigabit Ethernet
 # -----------------------------------------------------------------------------
-CONFIG PART = xc6vlx240tff1156-1;
-
-# Locate the Tri-Mode Ethernet MAC instance
-INST "*v6_emac" LOC = "TEMAC_X0Y0";
-
-# Clock Constraints
-# -----------------------------------------------------------------------------
-# Ethernet GTX_CLK high quality 125 MHz reference clock
-NET "GTX_CLK" TNM_NET = "ref_gtx_clk";
-TIMEGRP "temac_clk_ref_gtx" = "ref_gtx_clk";
-TIMESPEC "TS_temac_clk_ref_gtx" = PERIOD "temac_clk_ref_gtx" 8 ns HIGH 50 %;
-
-# Multiplexed 1 Gbps, 10/100 Mbps output inherits constraint from GTX_CLK
-NET "GMII_TX_CLK" TNM_NET = "ref_mux_clk";
-TIMEGRP "temac_clk_ref_mux" = "ref_mux_clk";
-TIMESPEC "TS_temac_clk_ref_mux" = PERIOD "temac_clk_ref_mux" TS_temac_clk_ref_gtx HIGH 50%;
-
-# Ethernet GMII PHY-side receive clock
-NET "GMII_RX_CLK" TNM_NET = "phy_clk_rx";
-TIMEGRP "temac_clk_phy_rx" = "phy_clk_rx";
-TIMESPEC "TS_temac_clk_phy_rx" = PERIOD "temac_clk_phy_rx" 7.5 ns HIGH 50 %;
-
-# IDELAYCTRL 200 MHz reference clock
-NET "REFCLK" TNM_NET  = "clk_ref_clk";
-TIMEGRP "ref_clk" = "clk_ref_clk";
-TIMESPEC "TS_ref_clk" = PERIOD "ref_clk" 5 ns HIGH 50 %;
-
-# GMII physical interface constraints
-# -----------------------------------------------------------------------------
-# Set the IDELAY values on the PHY inputs.
-INST "*gmii?ideldv"    IDELAY_VALUE = 21;
-INST "*gmii?ideld0"    IDELAY_VALUE = 21;
-INST "*gmii?ideld1"    IDELAY_VALUE = 21;
-INST "*gmii?ideld2"    IDELAY_VALUE = 21;
-INST "*gmii?ideld3"    IDELAY_VALUE = 21;
-INST "*gmii?ideld4"    IDELAY_VALUE = 21;
-INST "*gmii?ideld5"    IDELAY_VALUE = 21;
-INST "*gmii?ideld6"    IDELAY_VALUE = 21;
-INST "*gmii?ideld7"    IDELAY_VALUE = 21;
-INST "*gmii?ideler"    IDELAY_VALUE = 21;
-INST "*gmii_rxc_delay" IDELAY_VALUE = 0;
-INST "*gmii_rxc_delay" SIGNAL_PATTERN = CLOCK;
-
-# Group all IDELAY-related blocks to use a single IDELAYCTRL
-INST "*dlyctrl" IODELAY_GROUP = gmii_idelay;
-INST "*ideld?"  IODELAY_GROUP = gmii_idelay;
-INST "*ideldv"  IODELAY_GROUP = gmii_idelay;
-INST "*ideler"  IODELAY_GROUP = gmii_idelay;
-INST "*gmii_rxc_delay" IODELAY_GROUP = gmii_idelay;
-
-# The following constraints work in conjunction with IDELAY_VALUE settings to
-# check that the GMII receive bus remains in alignment with the rising edge of
-# GMII_RX_CLK, to within 2ns setup time and 750ps hold time. In addition to
-# adjusting IDELAY_VALUE settings for your system's timing characteristics, you
-# may wish to refine these constraints to match the GMII specification; see
-# Answer Record 33195 on xilinx.com for details.
-INST "GMII_RXD<?>" TNM = "gmii_rx";
-INST "GMII_RX_DV"  TNM = "gmii_rx";
-INST "GMII_RX_ER"  TNM = "gmii_rx";
-TIMEGRP "gmii_rx" OFFSET = IN 2 ns VALID 2.75 ns BEFORE "GMII_RX_CLK" RISING;
-
-# Constrain the GMII physical interface flip-flops to IOBs
-INST "*gmii?RXD_TO_MAC*"  IOB = true;
-INST "*gmii?RX_DV_TO_MAC" IOB = true;
-INST "*gmii?RX_ER_TO_MAC" IOB = true;
-INST "*gmii?GMII_TXD_?"   IOB = true;
-INST "*gmii?GMII_TX_EN"   IOB = true;
-INST "*gmii?GMII_TX_ER"   IOB = true;
-
 #BASE-T PHY Receiver Constraints (GMII / MII)
 NET "GMII_TXD<0>" LOC = "AM11"; ## 18 on U80
 NET "GMII_TXD<1>" LOC = "AL11"; ## 19 on U80
@@ -242,54 +134,73 @@ NET "GMII_COL" LOC = "AK13"; ## 114 on U80
 NET "GMII_CRS" LOC = "AL13"; ## 115 on U80
 NET "MII_TX_CLK" LOC = "AD12";
 
-#BASE-T PHY MDIO Constraints
-NET "PHY_MDIO" LOC = "AN14"; ## 33 on U80
-NET "PHY_MDC" LOC = "AP14"; ## 35 on U80
-
 #BASE-X PHY Constraints
 NET "PHY_RESET_n" LOC = "AH13"; ## 36 on U80
-NET "PHY_INT" LOC = "AH14"; ## 32 on U80
 
+CONFIG PART = xc6vlx240tff1156-1;
+
+# Locate the Tri-Mode Ethernet MAC instance
+INST "*v6_emac" LOC = "TEMAC_X0Y0";
+
+# Clock Constraints
+# -----------------------------------------------------------------------------
+# Ethernet GTX_CLK high quality 125 MHz reference clock
+NET "clk_125MHz" TNM_NET = "ref_gtx_clk";
+TIMEGRP "temac_clk_ref_gtx" = "ref_gtx_clk";
+TIMESPEC "TS_temac_clk_ref_gtx" = PERIOD "temac_clk_ref_gtx" 8 ns HIGH 50 %;
+
+# Multiplexed 1 Gbps, 10/100 Mbps output inherits constraint from GTX_CLK
+NET "GMII_TX_CLK" TNM_NET = "ref_mux_clk";
+TIMEGRP "temac_clk_ref_mux" = "ref_mux_clk";
+TIMESPEC "TS_temac_clk_ref_mux" = PERIOD "temac_clk_ref_mux" TS_temac_clk_ref_gtx HIGH 50%;
+
+# Ethernet GMII PHY-side receive clock
+NET "GMII_RX_CLK" TNM_NET = "phy_clk_rx";
+TIMEGRP "temac_clk_phy_rx" = "phy_clk_rx";
+TIMESPEC "TS_temac_clk_phy_rx" = PERIOD "temac_clk_phy_rx" 7.5 ns HIGH 50 %;
+
+# IDELAYCTRL 200 MHz reference clock
+NET "clk_200MHz" TNM_NET  = "clk_ref_clk";
+TIMEGRP "ref_clk" = "clk_ref_clk";
+TIMESPEC "TS_ref_clk" = PERIOD "ref_clk" 5 ns HIGH 50 %;
+
+# define TIGs between unrelated clock domains
+TIMESPEC "TS_clock_path_gtx2ref" = FROM "clock_generator_clkout0" TO "clock_generator_clkout2" TIG;
+PIN "*bufgmux_speed_clk.I1" TIG;
+PIN "*bufgmux_speed_clk.CE0" TIG;
+
+# define TIGs on reset synchronizer FDPE PRE inputs
+PIN "*reset_sync1.PRE" TIG;
+PIN "*reset_sync2.PRE" TIG;
+
+# GMII physical interface constraints
+# -----------------------------------------------------------------------------
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rx_dv" IDELAY_VALUE = 23;
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rx_er" IDELAY_VALUE = 23;
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rxd"   IDELAY_VALUE = 23;
+
+# Group all IDELAY-related blocks to use a single IDELAYCTRL
+INST "*dlyctrl"                                      IODELAY_GROUP = gmii_idelay;
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rx_dv" IODELAY_GROUP = gmii_idelay;
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rx_er" IODELAY_GROUP = gmii_idelay;
+INST "*inst_embedded_emac_block*gmii_interface*delay_gmii_rxd"   IODELAY_GROUP = gmii_idelay;
+
+# The following constraints work in conjunction with IDELAY_VALUE settings to
+# check that the GMII receive bus remains in alignment with the rising edge of
+# GMII_RX_CLK, to within 2 ns setup time and 0 ns hold time.
+INST "gmii_rxd<?>" TNM = "gmii_rx";
+INST "gmii_rx_dv"  TNM = "gmii_rx";
+INST "gmii_rx_er"  TNM = "gmii_rx";
+TIMEGRP "gmii_rx" OFFSET = IN 2 ns VALID 2 ns BEFORE "gmii_rx_clk" RISING;
+
+# Constrain the GMII physical interface flip-flops to IOBs
+INST "*inst_embedded_emac_block*gmii_interface*rxd_to_mac*"  IOB = true;
+INST "*inst_embedded_emac_block*gmii_interface*rx_dv_to_mac" IOB = true;
+INST "*inst_embedded_emac_block*gmii_interface*rx_er_to_mac" IOB = true;
+INST "*inst_embedded_emac_block*gmii_interface*gmii_txd_?"   IOB = true;
+INST "*inst_embedded_emac_block*gmii_interface*gmii_tx_en"   IOB = true;
+INST "*inst_embedded_emac_block*gmii_interface*gmii_tx_er"   IOB = true;
+
+# Locate the GMII physical interface pins
 # Locate the 125 MHz reference clock buffer
-INST "ethernet_inst/bufg_tx" LOC = "BUFGCTRL_X0Y6";
-
-# LocalLink client FIFO transmit-side constraints
-# -----------------------------------------------------------------------------
-# Group the clock crossing signals into timing groups
-INST "*client_side_FIFO?tx_fifo_i?rd_tran_frame_tog"    TNM = "tx_fifo_rd_to_wr";
-INST "*client_side_FIFO?tx_fifo_i?rd_retran_frame_tog"  TNM = "tx_fifo_rd_to_wr";
-INST "*client_side_FIFO?tx_fifo_i?rd_col_window_pipe_1" TNM = "tx_fifo_rd_to_wr";
-INST "*client_side_FIFO?tx_fifo_i?rd_addr_txfer*"       TNM = "tx_fifo_rd_to_wr";
-INST "*client_side_FIFO?tx_fifo_i?rd_txfer_tog"         TNM = "tx_fifo_rd_to_wr";
-INST "*client_side_FIFO?tx_fifo_i?wr_frame_in_fifo"     TNM = "tx_fifo_wr_to_rd";
-
-TIMESPEC "TS_tx_fifo_rd_to_wr" = FROM "tx_fifo_rd_to_wr" TO "temac_clk_ref_mux" 8 ns DATAPATHONLY;
-TIMESPEC "TS_tx_fifo_wr_to_rd" = FROM "tx_fifo_wr_to_rd" TO "temac_clk_ref_mux" 8 ns DATAPATHONLY;
-
-# Reduce clock period to allow for metastability settling time
-INST "*client_side_FIFO?tx_fifo_i?wr_tran_frame_tog"    TNM = "tx_metastable";
-INST "*client_side_FIFO?tx_fifo_i?wr_rd_addr*"          TNM = "tx_metastable";
-INST "*client_side_FIFO?tx_fifo_i?wr_txfer_tog"         TNM = "tx_metastable";
-INST "*client_side_FIFO?tx_fifo_i?frame_in_fifo"        TNM = "tx_metastable";
-INST "*client_side_FIFO?tx_fifo_i?wr_retran_frame_tog*" TNM = "tx_metastable";
-INST "*client_side_FIFO?tx_fifo_i?wr_col_window_pipe_0" TNM = "tx_metastable";
-TIMESPEC "TS_tx_meta_protect" = FROM "tx_metastable" 5 ns DATAPATHONLY;
-
-# Transmit-side client FIFO address bus timing
-INST "*client_side_FIFO?tx_fifo_i?rd_addr_txfer*" TNM = "tx_addr_rd";
-INST "*client_side_FIFO?tx_fifo_i?wr_rd_addr*"    TNM = "tx_addr_wr";
-TIMESPEC "TS_tx_fifo_addr" = FROM "tx_addr_rd" TO "tx_addr_wr" 10 ns;
-
-# LocalLink client FIFO receive-side constraints
-# -----------------------------------------------------------------------------
-# Group the clock crossing signals into timing groups
-INST "*client_side_FIFO?rx_fifo_i?wr_store_frame_tog" TNM = "rx_fifo_wr_to_rd";
-INST "*client_side_FIFO?rx_fifo_i?rd_addr_gray*"      TNM = "rx_fifo_rd_to_wr";
-
-TIMESPEC "TS_rx_fifo_wr_to_rd" = FROM "rx_fifo_wr_to_rd" TO "temac_clk_ref_mux" 8 ns DATAPATHONLY;
-TIMESPEC "TS_rx_fifo_rd_to_wr" = FROM "rx_fifo_rd_to_wr" TO "temac_clk_phy_rx"  8 ns DATAPATHONLY;
-
-# Reduce clock period to allow for metastability settling time
-INST "*client_side_FIFO?rx_fifo_i?wr_rd_addr_gray_sync*" TNM = "rx_metastable";
-INST "*client_side_FIFO?rx_fifo_i?rd_store_frame_tog"    TNM = "rx_metastable";
-TIMESPEC "TS_rx_meta_protect" = FROM "rx_metastable" 5 ns;
+INST "*BUFGMUX_SPEED_CLK" LOC = "BUFGCTRL_X0Y6";

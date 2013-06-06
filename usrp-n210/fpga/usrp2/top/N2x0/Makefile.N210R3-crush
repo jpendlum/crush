@@ -10,9 +10,13 @@ BUILD_DIR = $(abspath build$(ISE)-N210R3)
 
 # set me in a custom makefile
 CUSTOM_SRCS = $(abspath $(addprefix $(BASE_DIR)/../crush/, \
-crush_intf.vhd \
+crush_ddr_intf.vhd \
 trunc_unbiased.vhd \
 uart.vhd \
+fifo_2x_to_1x.vhd \
+fifo_2x_to_1x.ngc \
+fifo_1x_to_2x.vhd \
+fifo_1x_to_2x.ngc \
 ))
 
 CUSTOM_DEFS =

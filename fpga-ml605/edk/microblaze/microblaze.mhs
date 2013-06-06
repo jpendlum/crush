@@ -14,8 +14,6 @@
  PORT uart_debug_tx = RS232_Uart_1_sout, DIR = O
  PORT uart_debug_rx = RS232_Uart_1_sin, DIR = I
  PORT reset = RESET, DIR = I, SIGIS = RST, RST_POLARITY = 1
- PORT uart_usrp_rx = axi_uartlite_usrp_RX, DIR = I
- PORT uart_usrp_tx = axi_uartlite_usrp_TX, DIR = O
  PORT clk = net_clock_generator_0_CLKIN, DIR = I, SIGIS = CLK, CLK_FREQ = 100000000
  PORT gpio_1_out = axi_gpio_0_GPIO_IO_O, DIR = O, VEC = [31:0]
  PORT gpio_1_in = net_gpio_1_in, DIR = I, VEC = [31:0]
@@ -168,19 +166,6 @@ BEGIN axi_gpio
  PORT S_AXI_ACLK = clk_100_0000MHz
  PORT GPIO_IO_O = axi_gpio_0_GPIO_IO_O
  PORT GPIO_IO_I = net_gpio_1_in
-END
-
-BEGIN axi_uartlite
- PARAMETER INSTANCE = axi_uartlite_usrp
- PARAMETER HW_VER = 1.02.a
- PARAMETER C_BAUDRATE = 115200
- PARAMETER C_USE_PARITY = 1
- PARAMETER C_BASEADDR = 0x40600000
- PARAMETER C_HIGHADDR = 0x4060ffff
- BUS_INTERFACE S_AXI = axi4lite_0
- PORT S_AXI_ACLK = clk_100_0000MHz
- PORT RX = axi_uartlite_usrp_RX
- PORT TX = axi_uartlite_usrp_TX
 END
 
 BEGIN fsl_external

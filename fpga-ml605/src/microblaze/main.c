@@ -20,7 +20,9 @@
 **  
 **  File: main.c
 **  Author: Jonathon Pendlum (jon.pendlum@gmail.com)
-**  Description: 
+**  Description: Allows user to manually set control signals (FFT size, 
+**               threshold, ...) and network parameters (source / destination 
+**               MAC addr, IP, Port, ...) via the UART interface.
 ******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,8 +43,8 @@ int HexToDec(int num_chars, char* string);
 // GPIO 1 In
 #define MASK_RX_DATA_CLK_LOCKED     0x1
 #define OFFSET_RX_DATA_CLK_LOCKED   0
-#define MASK_PHASE_CNT              0x7F
-#define OFFSET_PHASE_CNT            26
+#define MASK_PHASE_CNT              0x3FF  // 10 bits
+#define OFFSET_PHASE_CNT            22
 
 // GPIO 1 Out
 #define OFFSET_PHASE_INC            0x1
@@ -66,6 +68,10 @@ int HexToDec(int num_chars, char* string);
 #define RW_THRESHOLD_BYTES_3_2      0x0E
 #define RW_THRESHOLD_BYTES_1_0      0x0F
 #define RW_CTRL_FLAGS               0x10
+#define RW_USRP_MODE                0x11
+#define RW_BPSK_MODE                0x12
+#define RW_BPSK_FREQ                0x13
+#define RW_BPSK_DATA_FREQ           0x14
 #define SEND_THRESHOLD_BIT          0x1
 #define SEND_FFT_BIT                0x2
 #define SEND_MAG_SQUARED_BIT        0x4
@@ -73,7 +79,9 @@ int HexToDec(int num_chars, char* string);
 #define OVERRIDE_BIT                0x4000
 #define START_SPECTRUM_SENSE        0x8000
 
-
+/******************************************************************************
+** Main Function
+******************************************************************************/
 int main ()
 {
   u32 gpio_1_in = 0;
@@ -98,6 +106,10 @@ int main ()
   u16 threshold_byte_3_2 = 0;
   u16 threshold_byte_1_0 = 0;
   u16 ctrl_flags = 0;
+  u16 usrp_mode = 0;
+  u16 bpsk_mode = 0;
+  u16 bpsk_freq = 0;
+  u16 bpsk_data_freq = 0;
   u8 override = 0;
   u8 send_fft = 0;
   u8 send_threshold = 0;
@@ -116,27 +128,27 @@ int main ()
     xil_printf("-----------------------------------------------------------\r\n");
     xil_printf("\r\n");
     gpio_1_in = XIo_In32(XPAR_AXI_GPIO_0_BASEADDR);
-    xil_printf("USRP Connected:\t\t\t");
+    xil_printf("USRP Connected:\t\t\t\t");
     if ((gpio_1_in & MASK_RX_DATA_CLK_LOCKED) == TRUE) xil_printf("TRUE\r\n");
     else xil_printf("FALSE\r\n");
-    xil_printf("RX Data PLL Phase Offset:\t%d\r\n",(gpio_1_in >> OFFSET_PHASE_CNT) & MASK_PHASE_CNT);
-    xil_printf("Source MAC Address:\t\t%02x:%02x:%02x:%02x:%02x:%02x\r\n", 
+    xil_printf("USRP DDR Interface PLL Phase Offset:\t%d\r\n",(gpio_1_in >> OFFSET_PHASE_CNT) & MASK_PHASE_CNT);
+    xil_printf("Source MAC Address:\t\t\t%02x:%02x:%02x:%02x:%02x:%02x\r\n", 
       mac_addr_src_byte_5_4 >> 8, mac_addr_src_byte_5_4 & 0x00FF, mac_addr_src_byte_3_2 >> 8, 
       mac_addr_src_byte_3_2 & 0x00FF, mac_addr_src_byte_1_0 >> 8, mac_addr_src_byte_1_0 & 0x00FF);
-    xil_printf("Destination MAC Address:\t%02x:%02x:%02x:%02x:%02x:%02x\r\n", 
+    xil_printf("Destination MAC Address:\t\t%02x:%02x:%02x:%02x:%02x:%02x\r\n", 
       mac_addr_dest_byte_5_4 >> 8, mac_addr_dest_byte_5_4 & 0x00FF, mac_addr_dest_byte_3_2 >> 8, 
       mac_addr_dest_byte_3_2 & 0x00FF, mac_addr_dest_byte_1_0 >> 8, mac_addr_dest_byte_1_0 & 0x00FF);
-    xil_printf("Source IP Address:\t\t%d.%d.%d.%d\r\n",
+    xil_printf("Source IP Address:\t\t\t%d.%d.%d.%d\r\n",
       ip_addr_src_byte_3_2 >> 8, ip_addr_src_byte_3_2 & 0x00FF, 
       ip_addr_src_byte_1_0 >> 8, ip_addr_src_byte_1_0 & 0x00FF);
-    xil_printf("Destination IP Address:\t\t%d.%d.%d.%d\r\n",
+    xil_printf("Destination IP Address:\t\t\t%d.%d.%d.%d\r\n",
       ip_addr_dest_byte_3_2 >> 8, ip_addr_dest_byte_3_2 & 0x00FF,
       ip_addr_dest_byte_1_0 >> 8, ip_addr_dest_byte_1_0 & 0x00FF);
-    xil_printf("Source Port Address:\t\t%d\r\n",port_src);
-    xil_printf("Destination Port Address:\t%d\r\n", port_dest);
-    xil_printf("Payload Size:\t\t\t%d\r\n", payload_size);
-    xil_printf("FFT Size:\t\t\t%d\r\n", fft_size);
-    xil_printf("Threshold:\t\t\t%d\r\n", (threshold_byte_3_2 << 8) + threshold_byte_1_0);
+    xil_printf("Source Port Address:\t\t\t%d\r\n",port_src);
+    xil_printf("Destination Port Address:\t\t%d\r\n", port_dest);
+    xil_printf("Payload Size:\t\t\t\t%d\r\n", payload_size);
+    xil_printf("FFT Size:\t\t\t\t%d\r\n", fft_size);
+    xil_printf("Threshold:\t\t\t\t%d\r\n", (threshold_byte_3_2 << 8) + threshold_byte_1_0);
     xil_printf("Flags Enabled: ");
     if (override == 1) xil_printf("Override ");
     if (send_fft == 1) xil_printf("Send FFT ");
@@ -147,16 +159,17 @@ int main ()
     xil_printf("\r\n");
     xil_printf("\r\n");
     xil_printf("Menu:\r\n");
-    if (override == 0) xil_printf("[1] Set Override\r\n");
+    if (override == 0) xil_printf("[1] Enable Override\r\n");
     else               xil_printf("[1] Clear Override\r\n");
     xil_printf("[2] Start Spectrum Sensing (Override)\r\n");
     xil_printf("[3] Increment RX Data PLL Phase Offset\r\n");
     xil_printf("[4] Decrement RX Data PLL Phase Offset\r\n");
-    xil_printf("[5] Set USRP Mode\r\n");
+    xil_printf("[5] Set USRP Mode (Override)\r\n");
     xil_printf("[6] Set Network Configuration\r\n");
     xil_printf("[7] Set Spectrum Sensing Options (Override)\r\n");
-    xil_printf("[8] Write All Registers\r\n");
-    xil_printf("[9] Read All Registers\r\n");
+    xil_printf("[8] Set BPSK Waveform Options (Override)\r\n");
+    xil_printf("[w] Write All Registers\r\n");
+    xil_printf("[r] Read All Registers\r\n");
     xil_printf("\r\n");
     xil_printf("Selection: ");
     GetUartBytes(1,&menu_selection);
@@ -204,7 +217,7 @@ int main ()
         break;
 
       case '5':
-        xil_printf("Set mode:\r\n");
+        xil_printf("Set RX mode:\r\n");
         xil_printf("[0] ADC Data\r\n");
         xil_printf("[1] ADC Data (DC offset compensation)\r\n");
         xil_printf("[2] Sine Wave Test Pattern\r\n");
@@ -213,18 +226,45 @@ int main ()
         xil_printf("[5] All 0s Output\r\n");
         xil_printf("[6] All 1s on Channel A, All 0s on Channel B\r\n");
         xil_printf("[7] All 0s on Channel A, All 1s on Channel B\r\n");
+        xil_printf("[8] Check Alignment Mode (I: 0x1B49, Q: 0x0E63)\r\n");
+        xil_printf("[9] Loopback TX data through RX\r\n");
         xil_printf("\r\n");
         xil_printf("Selection: ");
         GetUartBytes(1,&menu_selection);
         xil_printf("\r\n");
-        // Is selection 0 - 7?
-        if (menu_selection > 47 && menu_selection < 56)
+        // Is selection 0 - 9?
+        if (menu_selection > 47 && menu_selection < 58)
         {
-          XUartLite_SendByte(USRP_UART_BASEADDR,menu_selection - 48);
+          // Store RX mode in lower nibble
+          usrp_mode = ((menu_selection - 48) & 0x0F);
+          xil_printf("Set TX mode:\r\n");
+          xil_printf("[0] Use USRP TX Data\r\n");
+          xil_printf("[1] Use CRUSH TX Data\r\n");
+          xil_printf("[2] Use CRUSH TX Data (DC offset compenstation)\r\n");
+          xil_printf("[3] Output Test Tone\r\n");
+          xil_printf("\r\n");
+          xil_printf("Selection: ");
+          GetUartBytes(1,&menu_selection);
+          xil_printf("\r\n");
+          // Is selection 0 - 3?
+          if (menu_selection > 47 && menu_selection < 52)
+          {
+            // Store TX mode in upper nibble
+            usrp_mode = (((menu_selection - 48) & 0x0F) << 4) + usrp_mode;
+            // Rising edge on strobe
+            usrp_mode = usrp_mode + 0x8000;
+            WriteReg(RW_USRP_MODE, usrp_mode);
+            usrp_mode = usrp_mode & 0x00FF;
+            WriteReg(RW_USRP_MODE, usrp_mode);
+          }
+          else
+          {
+            xil_printf("\'%c\' is an invalid selection.\r\n",menu_selection);
+          }
         }
         else
         {
-          xil_printf("\'%c\' is an invalid selection.\r\n",menu_selection);  
+          xil_printf("\'%c\' is an invalid selection.\r\n",menu_selection);
         }
         break;
 
@@ -420,13 +460,54 @@ int main ()
 
           default:
             xil_printf("\'%c\' is an invalid selection.\r\n",menu_selection);
-            break;          
+            break;
+        }
+        break;
+
+      // Set BPSK Waveform Options
+      case '8':
+        xil_printf("[1] Set BPSK Mode\r\n");
+        xil_printf("[2] Set BPSK Offset Frequency\r\n");
+        xil_printf("[3] Set BPSK Data Frequency\r\n");
+        xil_printf("\r\n");
+        xil_printf("Selection: ");
+        GetUartBytes(1,&menu_selection);
+        xil_printf("\r\n");
+        switch(menu_selection)
+        {
+          // Set BPSK Mode
+          case '1':
+            xil_printf("BPSK Mode (Hex, 1 digit, 0 = Disable Data, 1 = CW, 2 = PRN Data, 3 = Test Pattern): ");
+            GetUartBytes(1,&string[0]);
+            bpsk_mode = HexToDec(1,&string[0]);
+            WriteReg(RW_BPSK_MODE,bpsk_mode);
+            break;
+
+          // Set BPSK Offset Frequency
+          case '2':
+            xil_printf("BPSK Offset Frequency (Hex, 4 digits, ex. 1FFF): ");
+            GetUartBytes(4,&string[0]);
+            bpsk_freq = HexToDec(4,&string[0]);
+            WriteReg(RW_BPSK_FREQ,bpsk_freq);
+            break;
+
+          // Set BPSK Data Frequency
+          case '3':
+            xil_printf("BPSK Data Frequency (Hex, 4 digits, ex. 1FFF): ");
+            GetUartBytes(4,&string[0]);
+            bpsk_data_freq = HexToDec(4,&string[0]);
+            WriteReg(RW_BPSK_DATA_FREQ,bpsk_data_freq);
+            break;
+
+          default:
+            xil_printf("\'%c\' is an invalid selection.\r\n",menu_selection);
+            break;
         }
         break;
 
       // Refresh all registers. This is useful if the USRP is disconnected
       // which resets values to their defaults.
-      case '8':
+      case 'w':
         WriteReg(RW_MAC_ADDR_DEST_BYTES_5_4, mac_addr_dest_byte_5_4);
         WriteReg(RW_MAC_ADDR_DEST_BYTES_3_2, mac_addr_dest_byte_3_2);
         WriteReg(RW_MAC_ADDR_DEST_BYTES_1_0, mac_addr_dest_byte_1_0);
@@ -444,10 +525,14 @@ int main ()
         WriteReg(RW_THRESHOLD_BYTES_3_2, threshold_byte_3_2);
         WriteReg(RW_THRESHOLD_BYTES_1_0, threshold_byte_1_0);
         WriteReg(RW_CTRL_FLAGS, ctrl_flags);
+        WriteReg(RW_USRP_MODE, usrp_mode);
+        WriteReg(RW_BPSK_MODE, bpsk_mode);
+        WriteReg(RW_BPSK_FREQ, bpsk_freq);
+        WriteReg(RW_BPSK_DATA_FREQ, bpsk_data_freq);
         break;
 
       // Read all registers, as the HDL code sets the defaults
-      case '9':
+      case 'r':
         mac_addr_dest_byte_5_4 = ReadReg(RW_MAC_ADDR_DEST_BYTES_5_4);
         mac_addr_dest_byte_3_2 = ReadReg(RW_MAC_ADDR_DEST_BYTES_3_2);
         mac_addr_dest_byte_1_0 = ReadReg(RW_MAC_ADDR_DEST_BYTES_1_0);
@@ -475,6 +560,10 @@ int main ()
         else send_threshold = 0;
         if ((ctrl_flags & SEND_CNT_PATTERN_BIT) > 0) send_cnt_pattern = 1;
         else send_cnt_pattern = 0;
+        usrp_mode = ReadReg(RW_USRP_MODE);
+        bpsk_mode = ReadReg(RW_BPSK_MODE);
+        bpsk_freq = ReadReg(RW_BPSK_FREQ);
+        bpsk_data_freq = ReadReg(RW_BPSK_DATA_FREQ);
         break;
 
       default:
