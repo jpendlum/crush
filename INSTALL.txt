@@ -1,0 +1,49 @@
+Jonathon Pendlum
+jon.pendlum@gmail.com
+
+-- IMPORANT NOTES ABOUT FUTURE DEVELOPMENT --
+During the 2013 Summer, I successfully completed a Google Summer of Code project on adding
+FPGA Acceleration to GNU Radio with the Xilinx Zynq SoC. The Zynq SoC is a dual core ARM +
+FPGA fabric device that can act as a single board computer with signifigant signal processing
+capabilities, which especially interests the GNU Radio community.
+
+The results from the GSoC project included:
+  1) Built infrastructure (Linux kernel device driver, FPGA code) for the Zynq SoC to support 
+     the implementation of FPGA accelerated blocks in GNU Radio
+  2) Demonstrated the infrastructure capabilities with a FPGA accelerated FIR filter block 
+     in GNU Radio
+
+As an extension to that work, I will be porting CRUSH to the Zynq architecture. The resulting 
+system will be quite exciting as it will combine CRUSH's low latency access to USRP sample data
+with FPGA acceleration in GNU Radio on the Zynq SoC. This can spur algorithm research that
+can take advantage of the system's heterogenous processing capabilities.
+
+GSoC Project site:
+http://www.google-melange.com/gsoc/project/google/gsoc2013/jpendlum/10001
+
+GNU Radio Wiki on my Zynq work:
+http://gnuradio.org/redmine/projects/gnuradio/wiki/Zynq
+
+Github pages with my source code:
+https://github.com/jpendlum/GnuRadio_Zynq
+https://github.com/jpendlum/gr-zynq
+https://github.com/jpendlum/zynq-acp
+https://github.com/jpendlum/user-peripheral-kmod
+https://github.com/jpendlum/zynq-fir-filter-example
+
+
+
+-- CRUSH Hardware Requirements --
+- Ettus Research USRP N210 with WBX daughter card
+- Xilinx ML605 Virtex 6 FPGA Development Board
+- MICTOR 38 Pin Male to Male Cable*
+- FMC to Mictor Custom PCB**
+
+* This can be bought from Emulation Technology, Inc 
+  http://www.emulation.com/catalog/off-the-shelf_solutions/mictor/mictor.cfm
+  Part# MIC-38-CABLE-MM-18
+** This is a custom designed PCB. The schematics, layout, and BOM are included for 
+   PCB manufacturing and assembly. You can also try using Xilinx's FMC XM105 debug 
+   card (http://www.xilinx.com/products/boards-and-kits/HW-FMC-XM105-G.htm), but
+   the top level pin mappings will need to be changed to reflect the XM105's placement
+   of the MICTOR cable I/O.
