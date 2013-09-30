@@ -31,12 +31,13 @@ module u2plus_core
    output [7:0] leds,
 
    // CRUSH (on debug pins)
-   input         dsp_clk_180,
-   output        RX_DATA_CLK_N,
-   output        RX_DATA_CLK_P,
-   output [13:0] RX_DATA_N,
-   output [13:0] RX_DATA_P,
-   input         UART_RX,
+   output       RX_DATA_CLK_N,
+   output       RX_DATA_CLK_P,
+   output [6:0] RX_DATA_N,
+   output [6:0] RX_DATA_P,
+   input  [7:0] TX_DATA_N,
+   input  [7:0] TX_DATA_P,
+   input        UART_RX,
 
    // Expansion
    input exp_time_in,
@@ -711,6 +712,8 @@ module u2plus_core
 	.debug(debug_extfifo),
 	.debug2(debug_extfifo2) );
 
+   wire [15:0]   dac_a_int,dac_b_int;
+   wire [23:0]     tx_fe_i_int, tx_fe_q_int;
    wire [23:0] 	 tx_fe_i, tx_fe_q;
    wire [31:0]   sample_tx;
    wire strobe_tx;
@@ -734,7 +737,7 @@ module u2plus_core
      (.clk(dsp_clk),.rst(dsp_rst), .clr(clear_tx),
       .set_stb(set_stb_dsp),.set_addr(set_addr_dsp),.set_data(set_data_dsp),
       .set_stb_user(set_stb_user), .set_addr_user(set_addr_user), .set_data_user(set_data_user),
-      .tx_fe_i(tx_fe_i),.tx_fe_q(tx_fe_q),
+      .tx_fe_i(tx_fe_i_int),.tx_fe_q(tx_fe_q_int),
       .sample(sample_tx), .run(run_tx), .strobe(strobe_tx),
       .debug() );
 
@@ -742,7 +745,7 @@ module u2plus_core
      (.clk(dsp_clk), .rst(dsp_rst),
       .set_stb(set_stb_dsp),.set_addr(set_addr_dsp),.set_data(set_data_dsp),
       .tx_i(tx_fe_i), .tx_q(tx_fe_q), .run(1'b1),
-      .dac_a(dac_a), .dac_b(dac_b));
+      .dac_a(dac_a_int), .dac_b(dac_b_int));
 
    // ///////////////////////////////////////////////////////////////////////////////////
    // SERDES
@@ -767,21 +770,30 @@ module u2plus_core
       .pps(pps_in), .vita_time(vita_time), .vita_time_pps(vita_time_pps), .pps_int(pps_int),
       .exp_time_in(exp_time_in), .exp_time_out(exp_time_out), .good_sync(good_sync), .debug(debug_sync));
 
-   // /////////////////////////////////////////////////////////////////////////////////////////
-   // CRUSH
+  // /////////////////////////////////////////////////////////////////////////////////////////
+  // CRUSH
 
-   crush_intf crush_intf (
-     .clk(dsp_clk),
-     .clk_180(dsp_clk_180),
-     .reset(dsp_rst),
-     .RX_DATA_CLK_N(RX_DATA_CLK_N),
-     .RX_DATA_CLK_P(RX_DATA_CLK_P),
-     .RX_DATA_N(RX_DATA_N[13:0]),
-     .RX_DATA_P(RX_DATA_P[13:0]),
-     .UART_RX(UART_RX),
-     .adc_channel_a(adc_a),
-     .adc_channel_b(adc_b),
-     .adc_i(rx_fe_i),
-     .adc_q(rx_fe_q));
+  crush_ddr_intf crush_ddr_intf (
+    .clk(dsp_clk),
+    .reset(dsp_rst),
+    .RX_DATA_CLK_N(RX_DATA_CLK_N),
+    .RX_DATA_CLK_P(RX_DATA_CLK_P),
+    .RX_DATA_N(RX_DATA_N[6:0]),
+    .RX_DATA_P(RX_DATA_P[6:0]),
+    .TX_DATA_N(TX_DATA_N[7:0]),
+    .TX_DATA_P(TX_DATA_P[7:0]),
+    .UART_RX(UART_RX),
+    .adc_channel_a(adc_a),
+    .adc_channel_b(adc_b),
+    .adc_i(rx_fe_i),
+    .adc_q(rx_fe_q),
+    .dac_channel_a_in(dac_a_int),
+    .dac_channel_b_in(dac_b_int),
+    .dac_i_in(tx_fe_i_int),
+    .dac_q_in(tx_fe_q_int),
+    .dac_channel_a(dac_a),
+    .dac_channel_b(dac_b),
+    .dac_i(tx_fe_i),
+    .dac_q(tx_fe_q));
 
 endmodule // u2_core

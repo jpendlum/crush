@@ -52,6 +52,18 @@ entity user_block_ctrl is
     man_send_counting_pattern   : in    std_logic;                      -- Enable sending the debug counting pattern
     man_fft_size                : in    std_logic_vector(4 downto 0);   -- FFT Size
     man_threshold               : in    std_logic_vector(31 downto 0);  -- Threshold (Magnitude squared)
+    man_user_ddr_intf_mode      : in    std_logic_vector(7 downto 0);   -- USRP DDR interface mode
+    man_user_ddr_intf_mode_stb  : in    std_logic;                      -- Strobe to set mode
+    man_bpsk_mode               : in    std_logic_vector(1 downto 0);   -- 0 = BPSK, 1 = CW, 2 = PRN data, 3 = Test Pattern
+    man_bpsk_freq               : in    std_logic_vector(15 downto 0);  -- Carrier Offset Frequency
+    man_bpsk_data_freq          : in    std_logic_vector(15 downto 0);  -- Psuedo-Random Data Frequency
+    -- ML605 to USRP DDR Interface
+    user_ddr_intf_mode          : out  std_logic_vector(7 downto 0);    -- USRP DDR interface mode
+    user_ddr_intf_mode_stb      : out  std_logic;                       -- Strobe to set mode
+    -- BPSK Transmit Waveform Generator
+    bpsk_mode                   : out   std_logic_vector(1 downto 0);   -- 0 = BPSK, 1 = CW, 2 = PRN data, 3 = Test Pattern
+    bpsk_freq                   : out  std_logic_vector(15 downto 0);   -- Carrier Offset Frequency
+    bpsk_data_freq              : out  std_logic_vector(15 downto 0);   -- Psuedo-Random Data Frequency
     -- Spectrum Sensing User Block
     spec_sense_start_stb        : out   std_logic;                      -- Enable sending threshold results via UDP
     spec_sense_busy             : in    std_logic;                      -- Busy
@@ -149,13 +161,19 @@ architecture RTL of user_block_ctrl is
   constant CMD_SET_CONFIG_WORD      : std_logic_vector(7 downto 0)  := x"02";
   constant CMD_SET_FFT_SIZE         : std_logic_vector(7 downto 0)  := x"03";
   constant CMD_SET_THRESHOLD        : std_logic_vector(7 downto 0)  := x"04";
+  constant CMD_SET_USRP_MODE        : std_logic_vector(7 downto 0)  := x"05";
+  constant CMD_SET_BPSK_MODE        : std_logic_vector(7 downto 0)  := x"06";
+  constant CMD_SET_BPSK_FREQ        : std_logic_vector(7 downto 0)  := x"07";
+  constant CMD_SET_BPSK_DATA_FREQ   : std_logic_vector(7 downto 0)  := x"08";
 
   -----------------------------------------------------------------------------
   -- Signals Declaration
   -----------------------------------------------------------------------------
   type ctrl_state_type is (CTRL_IDLE,CTRL_CHECK_INTEGRITY_HEADER,CTRL_CMD_WORD,
                            CTRL_SET_CONFIG_WORD,CTRL_SET_FFT_SIZE,CTRL_SET_THRESHOLD,
-                           CTRL_SENSE_SPECTRUM,CTRL_UDP_ERROR);
+                           CTRL_SENSE_SPECTRUM,CTRL_SET_USRP_MODE,CTRL_SET_BPSK,
+                           CTRL_SET_BPSK_MODE,CTRL_SET_BPSK_FREQ,
+                           CTRL_SET_BPSK_DATA_FREQ,CTRL_UDP_ERROR);
   signal ctrl_state                     : ctrl_state_type;
   signal rx_counter                     : integer range 0 to 1472;
   signal rx_byte_counter                : integer range 0 to 3;
@@ -166,6 +184,11 @@ architecture RTL of user_block_ctrl is
   signal ctrl_fft_size                  : std_logic_vector( 4 downto 0);
   signal ctrl_threshold                 : std_logic_vector(31 downto 0);
   signal ctrl_config_word               : std_logic_vector( 7 downto 0);
+  signal ctrl_user_ddr_intf_mode        : std_logic_vector(7 downto 0);
+  signal ctrl_user_ddr_intf_mode_stb    : std_logic;
+  signal ctrl_bpsk_mode                 : std_logic_vector(1 downto 0);
+  signal ctrl_bpsk_freq                 : std_logic_vector(15 downto 0);
+  signal ctrl_bpsk_data_freq            : std_logic_vector(15 downto 0);
   signal config_word                    : std_logic_vector( 7 downto 0);
   signal send_mag_squared               : std_logic;
   signal send_fft                       : std_logic;
@@ -221,6 +244,10 @@ begin
 
   -----------------------------------------------------------------------------
   -- UDP control interface state machine
+  -- This state machine interfaces with the UDP RX component to receive
+  -- control data from the host computer. Manual override logic exists to
+  -- allow the control signals to be controlled set by another component, such 
+  -- as an embedded Microblaze processor.
   -----------------------------------------------------------------------------
   proc_udp_control_interface : process(clk,reset)
   begin
@@ -230,11 +257,21 @@ begin
         fft_size_int                        <= (others=>'0');
         threshold                           <= (others=>'0');
         config_word                         <= (others=>'0');
+        user_ddr_intf_mode                  <= (others=>'0');
+        user_ddr_intf_mode_stb              <= '0';
+        bpsk_mode                           <= (others=>'0');
+        bpsk_freq                           <= (others=>'0');
+        bpsk_data_freq                      <= (others=>'0');
         ctrl_spec_sense_start_stb           <= '0';
         ctrl_fft_size                       <= "01101"; -- FFT size 512
         ctrl_threshold                      <= "00001" & (26 downto 0 =>'0');
         -- By default, set configuration to send fft, mag squared, and threshold data
         ctrl_config_word                    <= "00000111";
+        ctrl_user_ddr_intf_mode             <= (others=>'0');
+        ctrl_user_ddr_intf_mode_stb         <= '0';
+        ctrl_bpsk_mode                      <= (others=>'0');
+        ctrl_bpsk_freq                      <= (others=>'0');
+        ctrl_bpsk_data_freq                 <= (others=>'0');
         rx_counter                          <= 0;
         rx_byte_counter                     <= 0;
         rx_payload_data_rd_en               <= '0';
@@ -243,6 +280,7 @@ begin
       else
         -- Strobes are only one clock cycle
         ctrl_spec_sense_start_stb           <= '0';
+        ctrl_user_ddr_intf_mode_stb         <= '0';
 
         -- Control state machine
         case (ctrl_state) is
@@ -290,6 +328,18 @@ begin
 
               when CMD_SET_THRESHOLD =>
                 ctrl_state                  <= CTRL_SET_THRESHOLD;
+
+              when CMD_SET_USRP_MODE =>
+                ctrl_state                  <= CTRL_SET_USRP_MODE;
+
+              when CMD_SET_BPSK_MODE =>
+                ctrl_state                  <= CTRL_SET_BPSK_MODE;
+
+              when CMD_SET_BPSK_FREQ =>
+                ctrl_state                  <= CTRL_SET_BPSK_FREQ;
+
+              when CMD_SET_BPSK_DATA_FREQ =>
+                ctrl_state                  <= CTRL_SET_BPSK_DATA_FREQ;
 
               when others =>
                 ctrl_state                  <= CTRL_CMD_WORD;
@@ -351,6 +401,73 @@ begin
               ctrl_state                    <= CTRL_CMD_WORD;
             end if;
 
+          -- Set USRP mode
+          when CTRL_SET_USRP_MODE =>
+            rx_payload_data_rd_en           <= '1';
+            rx_counter                      <= rx_counter + 1;
+            ctrl_user_ddr_intf_mode         <= rx_payload_data;
+            ctrl_user_ddr_intf_mode_stb     <= '1';
+            if (rx_counter = to_integer(unsigned(rx_payload_size_reg))) then
+              rx_payload_data_rd_en         <= '0';
+              ctrl_state                    <= CTRL_IDLE;
+            else
+              ctrl_state                    <= CTRL_CMD_WORD;
+            end if;
+
+          -- Set BPSK mode
+          when CTRL_SET_BPSK_MODE =>
+            rx_payload_data_rd_en           <= '1';
+            rx_counter                      <= rx_counter + 1;
+            ctrl_bpsk_mode                  <= rx_payload_data(1 downto 0);
+            if (rx_counter = to_integer(unsigned(rx_payload_size_reg))) then
+              rx_payload_data_rd_en         <= '0';
+              ctrl_state                    <= CTRL_IDLE;
+            else
+              ctrl_state                    <= CTRL_CMD_WORD;
+            end if;
+
+          -- Set BSPK carrier frequency
+          when CTRL_SET_BPSK_FREQ =>
+            rx_payload_data_rd_en           <= '1';
+            rx_counter                      <= rx_counter + 1;
+            case (rx_byte_counter) is
+              when 0 =>
+                rx_byte_counter               <= 1;
+                ctrl_bpsk_freq(15 downto  8)  <= rx_payload_data;
+              when 1 => 
+                rx_byte_counter               <= 0;
+                ctrl_bpsk_freq( 7 downto  0)  <= rx_payload_data;
+              when others =>
+            end case;
+            if (rx_counter = to_integer(unsigned(rx_payload_size_reg))) then
+              rx_payload_data_rd_en         <= '0';
+              ctrl_state                    <= CTRL_IDLE;
+            -- On the final byte, check next cmd word
+            elsif (rx_byte_counter = 1) then
+              ctrl_state                    <= CTRL_CMD_WORD;
+            end if;
+
+          -- Set BPSK data rate
+          when CTRL_SET_BPSK_DATA_FREQ =>
+            rx_payload_data_rd_en           <= '1';
+            rx_counter                      <= rx_counter + 1;
+            case (rx_byte_counter) is
+              when 0 =>
+                rx_byte_counter                     <= 1;
+                ctrl_bpsk_data_freq(15 downto  8)   <= rx_payload_data;
+              when 1 => 
+                rx_byte_counter                     <= 0;
+                ctrl_bpsk_data_freq( 7 downto  0)   <= rx_payload_data;
+              when others =>
+            end case;
+            if (rx_counter = to_integer(unsigned(rx_payload_size_reg))) then
+              rx_payload_data_rd_en         <= '0';
+              ctrl_state                    <= CTRL_IDLE;
+            -- On the final byte, check next cmd word
+            elsif (rx_byte_counter = 1) then
+              ctrl_state                    <= CTRL_CMD_WORD;
+            end if;
+
           -- Frame error, drop the payload data as it may be corrupt.
           when CTRL_UDP_ERROR =>
             rx_payload_data_rd_en           <= '1';
@@ -374,11 +491,21 @@ begin
                                                man_send_mag_squared & 
                                                man_send_fft_data & 
                                                man_send_threshold;
+          user_ddr_intf_mode                <= man_user_ddr_intf_mode;
+          user_ddr_intf_mode_stb            <= man_user_ddr_intf_mode_stb;
+          bpsk_mode                         <= man_bpsk_mode;
+          bpsk_freq                         <= man_bpsk_freq;
+          bpsk_data_freq                    <= man_bpsk_data_freq;
         else
           spec_sense_start_stb_int          <= ctrl_spec_sense_start_stb;
           fft_size_int                      <= ctrl_fft_size;
           threshold                         <= ctrl_threshold;
           config_word                       <= ctrl_config_word;
+          user_ddr_intf_mode                <= ctrl_user_ddr_intf_mode;
+          user_ddr_intf_mode_stb            <= ctrl_user_ddr_intf_mode_stb;
+          bpsk_mode                         <= ctrl_bpsk_mode;
+          bpsk_freq                         <= ctrl_bpsk_freq;
+          bpsk_data_freq                    <= ctrl_bpsk_data_freq;
         end if;
       end if;
     end if;
@@ -393,6 +520,8 @@ begin
 
   -----------------------------------------------------------------------------
   -- UDP transmit interface state machine
+  -- This state machine sends the FFT's output to the host computer via
+  -- UDP ethernet transmission.
   -----------------------------------------------------------------------------
   proc_udp_transmit_state_machine : process(clk,reset)
   begin

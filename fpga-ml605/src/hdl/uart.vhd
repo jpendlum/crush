@@ -94,7 +94,7 @@ architecture RTL of uart is
   signal tx_parity              : std_logic;
   signal tx_parity_mux          : std_logic;
   signal tx_parity_calc         : std_logic_vector(DATA_BITS-1 downto 0);
-  signal tx_bit_cnt             : integer range 0 to DATA_BITS-1;
+  signal tx_bit_cnt             : integer range 0 to DATA_BITS;
   signal tx_bit_period_cnt      : integer range 0 to BIT_PERIOD-1;
 
 begin
@@ -256,6 +256,9 @@ begin
             if (tx_bit_period_cnt = BIT_PERIOD-1) then
               -- Send out first bit
               tx_int                    <= tx_data_int(0);
+              for i in 1 to DATA_BITS-1 loop
+                tx_data_int(i-1)        <= tx_data_int(i);
+              end loop;
               -- Register TX parity
               tx_parity                 <= tx_parity_mux;
               tx_bit_period_cnt         <= 0;
@@ -276,7 +279,7 @@ begin
             else
               tx_bit_period_cnt         <= tx_bit_period_cnt + 1;
             end if;
-            if (tx_bit_cnt = DATA_BITS-1) then
+            if (tx_bit_cnt = DATA_BITS) then
               tx_bit_cnt                <= 0;
               if (PARITY(PARITY'left) = 'N') then
                 tx_state                <= TX_STOP_BIT_S;

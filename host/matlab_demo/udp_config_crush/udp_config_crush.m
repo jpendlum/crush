@@ -26,15 +26,6 @@
 close all;
 clear all;
 
-% Notes:
-%
-% Configure word:
-
-%
-% Max payload size 1472 bytes.
-%
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % User configuration, change only these values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,7 +34,7 @@ udp_payload_size = 1472;
 % FFT Size, Max 8192
 fft_size = 8192;
 % FFT threshold in dB
-threshold_dB = 80;
+threshold_dB = 200;
 threshold = round(10^(threshold_dB/20));
 % Enable which data the FPGA will send over UDP. Note: For now, keep FFT, 
 % treshold, and magnitude squared data enabled as this script does not 
@@ -104,7 +95,8 @@ fft_mag_squared = zeros(1,fft_size,'uint32');
 %      7: Start Spectrum Sensing command. Initiates the spectrum sensing algorithm.
 commands = uint8([hex2dec('A5') ...
     2 (send_threshold+send_fft*2+send_mag_squared*2^2+send_counting_pattern*2^3) ...
-    3 log2(fft_size) 4 fliplr(typecast(int32(threshold),'uint8')) ...
+    3 log2(fft_size) ...
+    4 fliplr(typecast(uint32(threshold),'uint8')) ...
     1]);
 
 % Open UDP connection with CRUSH. The IP address, port address, etc are configurable in 
@@ -173,9 +165,6 @@ end
 % Grab FFT bins, real & imag, 16 bits signed
 k = 1;
 for l = 1:fft_size
-    if (l > 398)
-       m = 0; 
-    end
     fft_real(l) = typecast(uint16(udp_payload_data(i+k))*2^8 + uint16(udp_payload_data(i+k+1)),'int16');
     fft_imag(l) = typecast(uint16(udp_payload_data(i+k+2))*2^8 + uint16(udp_payload_data(i+k+3)),'int16');
     k = k + 4;
@@ -198,8 +187,8 @@ hold on;
 grid on;
 freq = linspace(-(Fs/2)*(1/1e6),(Fs/2)*(1/1e6),fft_size);
 freq_exceeded = freq(fft_threshold_exceeded+fft_size/2+1);
-%plot(freq,20*log10(fftshift(double(fft_real).^2+double(fft_imag).^2)+1)); % Add offset to avoid log10(0)
-plot(freq,20*log10(double((fftshift(fft_mag_squared)))+1)); % Add offset to avoid log10(0)
+plot(freq,20*log10(fftshift(double(fft_real).^2+double(fft_imag).^2)+1)); % Add offset to avoid log10(0)
+%plot(freq,20*log10(double((fftshift(fft_mag_squared)))+1)); % Add offset to avoid log10(0)
 plot(freq,20*log10(double(threshold*ones(1,fft_size))),'g'); 
 scatter(freq_exceeded,20*log10(double(threshold*ones(1,threshold_data_count))),'r','fill');
 legend('FFT Magnitude Squared','Threshold','Threshold Exceeded');

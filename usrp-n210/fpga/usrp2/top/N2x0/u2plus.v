@@ -59,11 +59,11 @@ module u2plus
    // CRUSH (on debug pins)
    output        RX_DATA_CLK_N,
    output        RX_DATA_CLK_P,
-   output [13:0] RX_DATA_N,
-   output [13:0] RX_DATA_P,
-   input         SPARE0,
-   input         SPARE1,
-   input         SPARE2,
+   output [6:0]  RX_DATA_N,
+   output [6:0]  RX_DATA_P,
+   input  [7:0]  TX_DATA_N,
+   input  [7:0]  TX_DATA_P,
+   input         SPARE,
    input         UART_RX,
 
    // Clock Gen Control
@@ -157,7 +157,7 @@ module u2plus
    BUFG phyclk2 (.O(CLK_TO_MAC_int2), .I(CLK_TO_MAC_int));
 
    // FPGA-specific pins connections
-   wire 	clk_fpga, dsp_clk, dsp_clk_180, clk_div, dcm_out, dcm_out_180, wb_clk, clock_ready;
+   wire 	clk_fpga, dsp_clk, clk_div, dcm_out, wb_clk, clock_ready;
 
    IBUFGDS clk_fpga_pin (.O(clk_fpga),.I(CLK_FPGA_P),.IB(CLK_FPGA_N));
    defparam 	clk_fpga_pin.IOSTANDARD = "LVPECL_25";
@@ -223,7 +223,7 @@ module u2plus
                  .CLK2X(),
                  .CLK2X180(),
                  .CLK90(),
-                 .CLK180(dcm_out_180),
+                 .CLK180(),
                  .CLK270(clk270_100),
                  .LOCKED(LOCKED_OUT),
                  .PSDONE(),
@@ -243,7 +243,6 @@ module u2plus
    defparam DCM_INST.PHASE_SHIFT = 0;
    defparam DCM_INST.STARTUP_WAIT = "FALSE";
 
-   BUFG dspclk_180_BUFG (.I(dcm_out_180), .O(dsp_clk_180));
    BUFG dspclk_BUFG (.I(dcm_out), .O(dsp_clk));
    BUFG wbclk_BUFG (.I(clk_div), .O(wb_clk));
 
@@ -387,11 +386,12 @@ module u2plus
 		     .clk_to_mac	(CLK_TO_MAC_int2),
 		     .pps_in		(pps),
 		     .leds		(leds_int),
-         .dsp_clk_180(dsp_clk_180),
          .RX_DATA_CLK_N(RX_DATA_CLK_N),
          .RX_DATA_CLK_P(RX_DATA_CLK_P),
-         .RX_DATA_N(RX_DATA_N[13:0]),
-         .RX_DATA_P(RX_DATA_P[13:0]),
+         .RX_DATA_N(RX_DATA_N[6:0]),
+         .RX_DATA_P(RX_DATA_P[6:0]),
+         .TX_DATA_N(TX_DATA_N[7:0]),
+         .TX_DATA_P(TX_DATA_P[7:0]),
          .UART_RX(UART_RX),
 		     .exp_time_in	(exp_time_in),
 		     .exp_time_out	(exp_time_out),
